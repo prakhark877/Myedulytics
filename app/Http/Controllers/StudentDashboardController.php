@@ -45,6 +45,7 @@ class StudentDashboardController extends Controller
         // Create the new user
         $user = User::create([
             'student_id' => uniqid(),
+            'type' => 2,
             'first_name' => $request->input('first_name'),
             'last_name' => $request->input('last_name'),
             'name' => $request->input('first_name') .' '. $request->input('last_name'),
