@@ -18,11 +18,10 @@ class AdminDashboardController extends Controller
     //
 
 
-    public
-    function getS3Token($user_id)
+    public function getS3Token()
     {
         try {
-           
+            
             $client = new CognitoIdentityClient([
                 'version' => 'latest',
                 'region' => "ap-south-1"
@@ -56,7 +55,8 @@ class AdminDashboardController extends Controller
                 $returnArray['message'] = "Failure";
             }
         } catch (Exception $e) {
-
+            $returnArray['success'] = false;
+            $returnArray['message'] = $e->getMessage();
            }
         return json_encode($returnArray);
     }
