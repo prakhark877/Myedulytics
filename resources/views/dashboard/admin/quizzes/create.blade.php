@@ -62,6 +62,12 @@
                                 <input type="file" name="image" class="form-control">
                                 
                             </div>
+                            <div class="form-group">
+                                <label for="image" class="form-label">Choose S3 File:</label>
+                                <input class=" upload form-control" id="fz_pg_bgimg" name="fz_pg_bgimg" onchange="uploadS3File(this.id)" type="file">
+                                <input id="pg_bgimg" name="pg_bgimg" type="hidden" value="">
+                                
+                            </div>
 
                             <button type="submit" class="btn btn-success">Add Quiz</button>
                         </form>
