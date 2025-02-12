@@ -1,4 +1,3 @@
-
 var s3;
 var identity_id = "ap-south-1:6cfbe6e5-6132-4178-9059-bfcf1655c107";
 var identity_pool_id = "ap-south-1:6cfbe6e5-6132-4178-9059-bfcf1655c107";
