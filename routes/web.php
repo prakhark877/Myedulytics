@@ -42,7 +42,7 @@ Route::get('student-attempt-quiz', [StudentDashboardController::class, 'userAtte
 
 
 /* Admin Dashboard Get Route */
-
+Route::get('/s3/token', [AdminDashboardController::class, 'getS3Token']);
 Route::get('/admin-dashboard', [AdminDashboardController::class, 'adminDashboard'])->name('adminDashboard');
 
 Route::group(['prefix' => 'super-admin'], function () {

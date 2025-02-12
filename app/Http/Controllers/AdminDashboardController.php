@@ -7,10 +7,59 @@ use App\utilities\helper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Exception;
+use Aws\S3\S3Client;
+use Aws\CognitoIdentity\CognitoIdentityClient;
+use Aws\CloudFront\CloudFrontClient;
+use Aws\Connect\ConnectClient;
 
 class AdminDashboardController extends Controller
 {
     //
+
+
+    public
+    function getS3Token($user_id)
+    {
+        try {
+           
+            $client = new CognitoIdentityClient([
+                'version' => 'latest',
+                'region' => "ap-south-1"
+            ]); // AWS::createClient('cognitoIdentity');
+            $identityPoolId = "ap-south-1:6cfbe6e5-6132-4178-9059-bfcf1655c107";
+            //echo $identityPoolId ;die;
+            $duration = 86400;
+            $providerName = "littleedventure";
+            //Log::info($identityPoolId);
+            //Log::info($providerName);
+            $resultIdentity = $client->getOpenIdTokenForDeveloperIdentity(array(
+                'IdentityPoolId' => $identityPoolId,
+                'Logins' => array(
+                    $providerName => 'super@admin.com'
+                ),
+                'TokenDuration' => $duration,
+            ));
+            //print_r($identityPoolId);die;
+            if (isset($resultIdentity['IdentityId']) && $resultIdentity['Token']) {
+                $returnArray['success'] = true;
+                $returnArray['message'] = "Ok";
+                $returnArray['identity_id'] = $resultIdentity['IdentityId'];
+                $returnArray['token'] = $resultIdentity['Token'];
+                $returnArray['identity_pool_id'] = $identityPoolId;
+                $returnArray['public_bucket'] = "littleedventure";
+                $returnArray['private_bucket'] = "littleedventure";
+                $returnArray['cloudfront_url'] = "https://d2vmtwtvjnckox.cloudfront.net";
+                $returnArray['s3_bucket_region'] = "ap-south-1";
+            } else {
+                $returnArray['success'] = false;
+                $returnArray['message'] = "Failure";
+            }
+        } catch (Exception $e) {
+
+           }
+        return json_encode($returnArray);
+    }
 
     public function adminDashboard(Request $request)
     {
