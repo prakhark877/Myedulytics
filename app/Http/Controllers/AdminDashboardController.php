@@ -46,8 +46,8 @@ class AdminDashboardController extends Controller
                 $returnArray['identity_id'] = $resultIdentity['IdentityId'];
                 $returnArray['token'] = $resultIdentity['Token'];
                 $returnArray['identity_pool_id'] = $identityPoolId;
-                $returnArray['public_bucket'] = "littleedventure";
-                $returnArray['private_bucket'] = "littleedventure";
+                $returnArray['public_bucket'] = "littleedvanture";
+                $returnArray['private_bucket'] = "littleedvanture";
                 $returnArray['cloudfront_url'] = "https://d2vmtwtvjnckox.cloudfront.net";
                 $returnArray['s3_bucket_region'] = "ap-south-1";
             } else {
