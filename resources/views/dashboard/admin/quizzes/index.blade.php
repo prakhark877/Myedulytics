@@ -37,7 +37,7 @@
                                         <td>{{ $quiz->random_questions_count }}</td>
                                         <td>{{ $quiz->category->cat_title }}</td>
                                         <td>{{ $quiz->subcategory->subcat_title }}</td>
-                                        <td><img src="{{ asset($quiz->image) }}" alt="Current File" width="50" height="50"></td>
+                                        <td><img src="{{ config('constants.AWS_CREDENTIALS.CLOUDFRONTURL') .$quiz->image }}" alt="Current File" width="50" height="50"></td>
                                         <td>
                                             <a href="{{ route('quizzes.edit', $quiz->id) }}"
                                                 class="btn btn-warning">Edit</a>
