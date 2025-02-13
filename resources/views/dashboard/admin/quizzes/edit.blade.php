@@ -68,7 +68,7 @@
                                         <input id="image" name="image" type="hidden" value="{{$quiz->image}}">
                                     
                                 
-                                <a target="_blank" href="{{ config('constants.AWS_CREDENTIALS.CLOUDFRONTURL') . $quiz->image }}"> <img src="{{ config('constants.AWS_CREDENTIALS.CLOUDFRONTURL') . '/' . $quiz->image }}" alt="Current File" width="50" height="50"></a>
+                                <a target="_blank" href="{{ config('constants.AWS_CREDENTIALS.CLOUDFRONTURL') . $quiz->image }}"> <img src="{{ config('constants.AWS_CREDENTIALS.CLOUDFRONTURL') . $quiz->image }}" alt="Current File" width="50" height="50"></a>
                             </div> </div>
                             <button type="submit" class="btn btn-success">Update</button>
                         </form>
