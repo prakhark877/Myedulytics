@@ -96,7 +96,7 @@
 
                     <div class="cb-media-block cb-margin-bottom-24">
                       
-                      <img class="cb-img-fluid cb-active-effect" src="{{ config('constants.AWS_CREDENTIALS.CLOUDFRONTURL') . '/' . $quiz->image }}"
+                      <img class="cb-img-fluid cb-active-effect" src="{{ config('constants.AWS_CREDENTIALS.CLOUDFRONTURL') . $quiz->image }}"
                         alt=""
                         id="responsiveImage_VnVzoTi3dU">
                     </div>
