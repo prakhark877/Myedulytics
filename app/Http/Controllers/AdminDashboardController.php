@@ -21,21 +21,25 @@ class AdminDashboardController extends Controller
     public function getS3Token()
     {
         try {
+            $user = helper::getTokenInfo();
+            if (!$user) {
+                return redirect()->route('login')->with('error', 'Token not found');
+            }
             
             $client = new CognitoIdentityClient([
                 'version' => 'latest',
-                'region' => "ap-south-1"
+                'region' => config('constants.AWS_CREDENTIALS.REGION')
             ]); // AWS::createClient('cognitoIdentity');
-            $identityPoolId = "ap-south-1:6cfbe6e5-6132-4178-9059-bfcf1655c107";
+            $identityPoolId = config('constants.AWS_CREDENTIALS.IDENTITYPOOLID');
             //echo $identityPoolId ;die;
-            $duration = 86400;
-            $providerName = "littleedventure";
+            $duration = config('constants.AWS_CREDENTIALS.TOKENDURATION');
+            $providerName = config('constants.AWS_CREDENTIALS.PROVIDERNAME');
             //Log::info($identityPoolId);
             //Log::info($providerName);
             $resultIdentity = $client->getOpenIdTokenForDeveloperIdentity(array(
                 'IdentityPoolId' => $identityPoolId,
                 'Logins' => array(
-                    $providerName => 'super@admin.com'
+                    $providerName => @$user['email']
                 ),
                 'TokenDuration' => $duration,
             ));
@@ -46,10 +50,10 @@ class AdminDashboardController extends Controller
                 $returnArray['identity_id'] = $resultIdentity['IdentityId'];
                 $returnArray['token'] = $resultIdentity['Token'];
                 $returnArray['identity_pool_id'] = $identityPoolId;
-                $returnArray['public_bucket'] = "littleedvanture";
-                $returnArray['private_bucket'] = "littleedvanture";
-                $returnArray['cloudfront_url'] = "https://d2vmtwtvjnckox.cloudfront.net";
-                $returnArray['s3_bucket_region'] = "ap-south-1";
+                $returnArray['public_bucket'] = config('constants.AWS_CREDENTIALS.S3BUCKET.PUBLIC');
+                $returnArray['private_bucket'] = config('constants.AWS_CREDENTIALS.S3BUCKET.PUBLIC');
+                $returnArray['cloudfront_url'] = config('constants.AWS_CREDENTIALS.CLOUDFRONTURL');
+                $returnArray['s3_bucket_region'] = config('constants.AWS_CREDENTIALS.REGION');
             } else {
                 $returnArray['success'] = false;
                 $returnArray['message'] = "Failure";
