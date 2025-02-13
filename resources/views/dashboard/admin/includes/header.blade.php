@@ -97,8 +97,8 @@
     <script src="/plugins/datatables-responsive/js/dataTables.responsive.min.js"></script>
     <script src="/plugins/datatables-responsive/js/responsive.bootstrap4.min.js"></script>
     
-    {{-- <script src="/js/aws-sdk-2.553.0.min.js"></script>
-    <script src="/js/common.js"></script> --}}
+    <script src="/js/aws-sdk-2.553.0.min.js"></script>
+    <script src="/js/common.js"></script>
 </head>
 
 

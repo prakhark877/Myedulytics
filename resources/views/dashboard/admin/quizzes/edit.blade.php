@@ -63,9 +63,12 @@
                             <div class="form-group">
                                 <label for="image" class="form-label">Choose File:</label>
                                 <div style="display:flex">
-                                <input type="file" name="image" class="form-control" style="width: 50%">
+                                       
+                                        <input class=" upload form-control" style="width: 50%" id="fz_image" name="fz_image" onchange="uploadS3File(this.id)" type="file">
+                                        <input id="image" name="image" type="hidden" value="{{$quiz->image}}">
+                                    
                                 
-                                <a target="_blank" href="{{ asset($quiz->image) }}"> <img src="{{ asset($quiz->image) }}" alt="Current File" width="50" height="50"></a>
+                                <a target="_blank" href="{{ config('constants.AWS_CREDENTIALS.CLOUDFRONTURL') . '/' . $quiz->image }}"> <img src="{{ config('constants.AWS_CREDENTIALS.CLOUDFRONTURL') . '/' . $quiz->image }}" alt="Current File" width="50" height="50"></a>
                             </div> </div>
                             <button type="submit" class="btn btn-success">Update</button>
                         </form>
