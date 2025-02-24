@@ -34,6 +34,11 @@
             <label for="email">Email</label>
             <input type="email" class="form-control" id="email" name="email" value="{{ old('email') }}" required>
         </div>
+         <!-- Email Field -->
+         <div class="form-group">
+            <label for="date">Date Of Birth</label>
+            <input type="date" class="form-control" id="dob" name="dob" value="{{ old('dob') }}" required>
+        </div>
 
         <!-- Password Field -->
         <div class="form-group">
@@ -53,4 +58,11 @@
 </div>
 </div>
 </div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        let today = new Date().toISOString().split("T")[0];
+        document.getElementById("dob").setAttribute("max", today);
+    });
+</script>
 @stop

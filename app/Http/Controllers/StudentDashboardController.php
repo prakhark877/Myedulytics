@@ -41,6 +41,7 @@ class StudentDashboardController extends Controller
         if ($validator->fails()) {
             return redirect()->back()->withErrors($validator)->withInput();
         }
+      
 
         // Create the new user
         $user = User::create([
@@ -50,6 +51,7 @@ class StudentDashboardController extends Controller
             'last_name' => $request->input('last_name'),
             'name' => $request->input('first_name') .' '. $request->input('last_name'),
             'email' => $request->input('email'),
+            'dob' => $request->input('dob'),
             'password' => Hash::make($request->input('password')),
         ]);
 

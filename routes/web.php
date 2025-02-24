@@ -10,6 +10,8 @@ use App\Http\Controllers\SubcategoryController;
 use App\Http\Controllers\QuizController;
 use App\Http\Controllers\QuestionController;
 use App\Http\Controllers\QuizAttemptAnswerController;
+use App\Http\Controllers\CmsPagesController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -51,6 +53,7 @@ Route::group(['prefix' => 'super-admin'], function () {
     Route::resource('subcategories', SubcategoryController::class);
     Route::resource('quizzes', QuizController::class);
     Route::resource('questions', QuestionController::class);
+    Route::resource('cms_pages', CmsPagesController::class);
 });
 
 Route::get('/quiz-list', [WebsiteController::class, 'quizList']);

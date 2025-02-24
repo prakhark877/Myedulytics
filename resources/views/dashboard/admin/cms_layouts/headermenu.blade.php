@@ -150,7 +150,14 @@
             </p>
           </a> 
         </li>
-
+        <li class="nav-item has-treeview">
+          <a href="/super-admin/cms_pages" class="nav-link">
+            <i class="nav-icon fas fa-copy"></i>
+            <p>Cms Pages
+              <span class="badge badge-info right">1</span>
+            </p>
+          </a> 
+        </li>
           
         </ul>        
       </nav>       
