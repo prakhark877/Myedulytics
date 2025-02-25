@@ -24,6 +24,7 @@
                                     <th>Category</th>
                                     <th>Subcategory</th>
                                     <th>image</th>
+                                    <th>Age Group</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
