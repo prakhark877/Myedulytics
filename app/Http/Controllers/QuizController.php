@@ -39,8 +39,7 @@ class QuizController extends Controller
             'title' => 'required|string|max:255|unique:quizzes',
             'category_id' => 'required|exists:categories,id',
             'subcategory_id' => 'required|exists:subcategories,id',
-            'description' => 'nullable|string',  
-            'image' => 'required', // Validate file
+            'description' => 'nullable|string'  
         ]);
     
         $data = $request->all();
