@@ -38,9 +38,7 @@ class QuizController extends Controller
         $request->validate([
             'title' => 'required|string|max:255|unique:quizzes',
             'category_id' => 'required|exists:categories,id',
-            'subcategory_id' => 'required|exists:subcategories,id',
-            'description' => 'nullable|string',  
-            'image' => 'required', // Validate file
+            'subcategory_id' => 'required|exists:subcategories,id'
         ]);
     
         $data = $request->all();
@@ -82,8 +80,7 @@ class QuizController extends Controller
         $request->validate([
             'title' => 'required|string|max:255|unique:quizzes,title,' . $quiz->id,
             'category_id' => 'required|exists:categories,id',
-            'subcategory_id' => 'required|exists:subcategories,id',
-            'description' => 'nullable|string'
+            'subcategory_id' => 'required|exists:subcategories,id'
         ]);
         $data = $request->all();
         // Save file directly to public/quiz_images
