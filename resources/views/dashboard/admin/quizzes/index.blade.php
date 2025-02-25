@@ -23,8 +23,8 @@
                                     <th>Random Questions Count</th>
                                     <th>Category</th>
                                     <th>Subcategory</th>
-                                    <th>image</th>
                                     <th>Age Group</th>
+                                    <th>image</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
