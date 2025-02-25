@@ -28,7 +28,9 @@ class QuizController extends Controller
             return redirect()->route('login')->with('error', 'Token not found');
         }
         $categories = Category::with('subcategories')->get();
-        return view('dashboard.admin.quizzes.create', compact('categories','user'));
+        $age_group = config('constants.AGE_GROUP');
+
+        return view('dashboard.admin.quizzes.create', compact('categories','user','age_group'));
     }
 
     public function store(Request $request)
@@ -69,7 +71,8 @@ class QuizController extends Controller
         }
         $quiz = Quiz::findOrFail($id);
         $categories = Category::with('subcategories')->get();
-        return view('dashboard.admin.quizzes.edit', compact('quiz', 'categories','user'));
+        $age_group = config('constants.AGE_GROUP');
+        return view('dashboard.admin.quizzes.edit', compact('quiz', 'categories','user','age_group'));
     }
 
     public function update(Request $request, $id)

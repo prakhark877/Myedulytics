@@ -33,6 +33,15 @@
                                 <input type="number" name="random_questions_count" id="random_questions_count" value="{{ $quiz->random_questions_count }}" class="form-control" required>
                             </div>
                             <div class="form-group">
+                                <label for="age_group_id">Age Group*</label>
+                                <select name="age_group_id" id="age_group_id" class="form-control" required>
+                                    @foreach ($age_group as $age)
+                                    <option value="{{ $age['value'] }}" @if ($age['value'] == $quiz->age_group_id) selected @endif>{{ $age['name'] }}</option>
+                                    @endforeach
+                                       
+                                </select>
+                            </div>
+                            <div class="form-group">
                                 <label for="category_id">Category*</label>
                                 <select name="category_id" id="category_id" class="form-control" required>
                                     <option value="">Select Category</option>

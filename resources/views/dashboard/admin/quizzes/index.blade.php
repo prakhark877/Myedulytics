@@ -29,6 +29,10 @@
                             </thead>
                             <tbody>
                                 @forelse ($quizzes as $quiz)
+                                @php
+    $ageGroups = config('constants.AGE_GROUP'); 
+    $selectedAgeGroup = collect($ageGroups)->firstWhere('value', $quiz->age_group_id);
+@endphp
                                     <tr>
                                       
                                         <td>{{ $quiz->id }}</td>
@@ -37,6 +41,7 @@
                                         <td>{{ $quiz->random_questions_count }}</td>
                                         <td>{{ $quiz->category->cat_title }}</td>
                                         <td>{{ $quiz->subcategory->subcat_title }}</td>
+                                        <td>{{ $selectedAgeGroup['name'] ?? 'N/A' }}</td>
                                         <td><img src="{{ config('constants.AWS_CREDENTIALS.CLOUDFRONTURL') .$quiz->image }}" alt="Current File" width="50" height="50"></td>
                                         <td>
                                             <a href="{{ route('quizzes.edit', $quiz->id) }}"
