@@ -8,7 +8,7 @@ class Quiz extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['category_id', 'subcategory_id', 'title', 'description','image','slug','duration','random_questions_count'];
+    protected $fillable = ['category_id','age_group_id', 'subcategory_id', 'title', 'description','image','slug','duration','random_questions_count'];
 
     public function category()
     {

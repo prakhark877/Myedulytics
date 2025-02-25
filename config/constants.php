@@ -16,6 +16,24 @@ return [
         ],
         'CLOUDFRONTURL' => "https://d2vmtwtvjnckox.cloudfront.net",
         'REGION' => "ap-south-1"
-    ]
+    ],
+    'AGE_GROUP' => [
+                [
+                    'name' => 'ages 9–14',
+                    'value' => '1',
+                ],
+                [
+                    'name' => 'Ages 8–16',
+                    'value' => '2',
+                ],
+                [
+                    'name' => 'Ages 12–18',
+                    'value' => '3',
+                ],
+                [
+                    'name' => 'Ages 14–18',
+                    'value' => '4',
+                ],
+            ],
         
 ];
