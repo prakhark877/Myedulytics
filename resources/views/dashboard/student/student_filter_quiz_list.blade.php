@@ -39,19 +39,12 @@ div#example2_info {
                 <table id="example2" class="table table-bordered table-hover">
                   <thead>
                   <tr>
-                    <th>Age Group</th>
                     <th>Quiz Title</th>
                   </tr>
                   </thead>
                   <tbody>
                   @foreach($quizzes as $key=> $val)
-                  @php
-                  $ageGroups = config('constants.AGE_GROUP'); 
-                  $selectedAgeGroup = collect($ageGroups)->firstWhere('value', $val->age_group_id);
-              @endphp
                   <tr>
-                    
-                    <td>{{$selectedAgeGroup['name'] ?? 'N/A'}}</td>
                     <td><a target="_blank" href="/continue-quiz/{{$val->slug}}"> {{$val->title}}</a></td>
                   </tr>
                   @endforeach

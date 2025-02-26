@@ -8,6 +8,7 @@ use App\Models\Quiz;
 use Illuminate\Http\Request;
 use App\utilities\helper;
 use Illuminate\Support\Facades\Log;
+use App\Models\AgeGroups;
 
 class QuizController extends Controller
 {
@@ -17,7 +18,12 @@ class QuizController extends Controller
         if (!$user) {
             return redirect()->route('login')->with('error', 'Token not found');
         }
-        $quizzes = Quiz::with('category', 'subcategory')->get();
+        // Get Filtered Quizzes
+        $quizzes = Quiz::select('quizzes.*', 'age_groups.name as age_group_name')
+        ->join('age_groups', 'quizzes.age_group_id', '=', 'age_groups.id')
+        ->with(['category', 'subcategory']) // Load related category & subcategory
+        ->get();
+       // return  $quizzes;
         return view('dashboard.admin.quizzes.index', compact('quizzes','user'));
     }
 
@@ -28,7 +34,7 @@ class QuizController extends Controller
             return redirect()->route('login')->with('error', 'Token not found');
         }
         $categories = Category::with('subcategories')->get();
-        $age_group = config('constants.AGE_GROUP');
+        $age_group = AgeGroups::all();
 
         return view('dashboard.admin.quizzes.create', compact('categories','user','age_group'));
     }
@@ -69,7 +75,7 @@ class QuizController extends Controller
         }
         $quiz = Quiz::findOrFail($id);
         $categories = Category::with('subcategories')->get();
-        $age_group = config('constants.AGE_GROUP');
+        $age_group = AgeGroups::all();
         return view('dashboard.admin.quizzes.edit', compact('quiz', 'categories','user','age_group'));
     }
 

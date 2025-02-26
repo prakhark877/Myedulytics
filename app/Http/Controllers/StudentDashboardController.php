@@ -9,6 +9,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use App\Models\AgeGroups;
 
 class StudentDashboardController extends Controller
 {
@@ -145,19 +146,24 @@ class StudentDashboardController extends Controller
         }
         $age = Carbon::parse($user->dob)->age;
         // Get AGE_GROUP from constants
-        $ageGroups = config('constants.AGE_GROUP');
-        // Get Matching Age Group IDs
-        $matchingGroupIDs = collect($ageGroups)
-            ->filter(fn($group) => $age >= $group['min'] && $age <= $group['max'])
-            ->pluck('value')
-            ->toArray();
+        $ageGroups = AgeGroups::all(); // Fetch all age groups from the database
 
-        // Get Filtered Quizzes
-        $quizzes = Quiz::with('category', 'subcategory')
-            ->whereIn('age_group_id', $matchingGroupIDs) // Filtering by age group
-            ->get();
+        // Get Matching Age Groups (IDs & Names)
+        $matchingGroups = $ageGroups->filter(function ($group) use ($age) {
+            return $age >= $group->min_age && $age <= $group->max_age;
+        });
         
-        // return $questions;
+        // Extract IDs and Names
+        $matchingGroupIDs = $matchingGroups->pluck('id')->toArray();
+        $matchingGroupNames = $matchingGroups->pluck('name')->toArray();
+        
+        // Get Filtered Quizzes
+        $quizzes = Quiz::select('quizzes.*', 'age_groups.name as age_group_name')
+        ->join('age_groups', 'quizzes.age_group_id', '=', 'age_groups.id')
+        ->whereIn('quizzes.age_group_id', $matchingGroupIDs)
+        ->with(['category', 'subcategory']) // Load related category & subcategory
+        ->get();
+        
         return view('dashboard.student.student_filter_quiz_list', compact('quizzes', 'user','age'));
     }
 

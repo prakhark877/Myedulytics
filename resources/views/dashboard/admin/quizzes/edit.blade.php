@@ -36,7 +36,7 @@
                                 <label for="age_group_id">Age Group*</label>
                                 <select name="age_group_id" id="age_group_id" class="form-control" required>
                                     @foreach ($age_group as $age)
-                                    <option value="{{ $age['value'] }}" @if ($age['value'] == $quiz->age_group_id) selected @endif>{{ $age['name'] }}</option>
+                                    <option value="{{ $age['id'] }}" @if ($age['id'] == $quiz->age_group_id) selected @endif>{{ $age['name'] }}</option>
                                     @endforeach
                                        
                                 </select>
