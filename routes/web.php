@@ -11,6 +11,7 @@ use App\Http\Controllers\QuizController;
 use App\Http\Controllers\QuestionController;
 use App\Http\Controllers\QuizAttemptAnswerController;
 use App\Http\Controllers\CmsPagesController;
+use App\Http\Controllers\AgeGroupsController;
 
 
 /*
@@ -54,6 +55,8 @@ Route::group(['prefix' => 'super-admin'], function () {
     Route::resource('quizzes', QuizController::class);
     Route::resource('questions', QuestionController::class);
     Route::resource('cms_pages', CmsPagesController::class);
+    Route::resource('age-groups', AgeGroupsController::class);
+    
 });
 
 Route::get('/quiz-list', [WebsiteController::class, 'quizList']);
