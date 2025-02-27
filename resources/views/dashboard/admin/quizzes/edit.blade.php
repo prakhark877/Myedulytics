@@ -58,9 +58,11 @@
                                     <option value="">Select Subcategory</option>
                                     @foreach ($categories as $category)
                                         @foreach ($category->subcategories as $subcategory)
+                                        @if ($category->id == $quiz->category_id) 
                                             <option value="{{ $subcategory->id }}" @if ($subcategory->id == $quiz->subcategory_id) selected @endif>
                                                 {{ $subcategory->subcat_title }}
                                             </option>
+                                            @endif
                                         @endforeach
                                     @endforeach
                                 </select>
@@ -86,4 +88,29 @@
             </div>
         </section>
     </div>
+    <script>
+        $(document).ready(function () {
+            $('#category_id').on('change', function () {
+                var categoryId = $(this).val();
+                if (categoryId) {
+                    $.ajax({
+                        url: "{{ route('get.subcategories') }}",
+                        type: "POST",
+                        data: {
+                            category_id: categoryId,
+                            _token: "{{ csrf_token() }}"
+                        },
+                        success: function (data) {
+                            $('#subcategory_id').empty().append('<option value="">Select Subcategory</option>');
+                            $.each(data, function (key, value) {
+                                $('#subcategory_id').append('<option value="' + value.id + '">' + value.subcat_title + '</option>');
+                            });
+                        }
+                    });
+                } else {
+                    $('#subcategory_id').empty().append('<option value=""> Select Subcategory </option>');
+                }
+            });
+        });
+    </script>
 @stop
