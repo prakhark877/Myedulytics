@@ -76,6 +76,7 @@ class QuizController extends Controller
         $quiz = Quiz::findOrFail($id);
         $categories = Category::with('subcategories')->get();
         $age_group = AgeGroups::all();
+       // return $categories;
         return view('dashboard.admin.quizzes.edit', compact('quiz', 'categories','user','age_group'));
     }
 
@@ -104,6 +105,11 @@ class QuizController extends Controller
         $quiz->delete();
 
         return redirect()->route('quizzes.index')->with('success', 'Quiz deleted successfully.');
+    }
+    public function getSubcategories(Request $request)
+    {
+        $subcategories = Subcategory::where('category_id', $request->category_id)->get();
+        return response()->json($subcategories);
     }
 }
 
