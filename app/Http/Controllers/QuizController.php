@@ -48,17 +48,7 @@ class QuizController extends Controller
         ]);
     
         $data = $request->all();
-
-        // // Save file directly to public/quiz_images
-        // if ($request->hasFile('image') && $request->file('image')->isValid()) {
-        //     $imageName = time() . '.' . $request->file('image')->getClientOriginalExtension();
-        //     $request->file('image')->move(public_path('quiz_images'), $imageName);
-        //     $data['image'] = 'quiz_images/' . $imageName;
-
-        //     Log::info('File uploaded successfully to: ' . public_path('quiz_images/' . $imageName));
-        // } else {
-        //     Log::info('No valid file uploaded.');
-        // }
+      
         $title = helper::slug($request->title);
         $data['slug'] = $title;
 
