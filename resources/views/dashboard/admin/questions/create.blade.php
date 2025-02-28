@@ -19,7 +19,7 @@
                             </div>
                         @endif
 
-                        <form action="{{ route('questions.store') }}" method="POST">
+                        <form action="{{ route('questions.store') }}" method="POST" id="questionForm">
                             @csrf
                             <div class="form-group">
                                 <label for="quiz_id">Quiz*</label>
@@ -30,39 +30,37 @@
                                     @endforeach
                                 </select>
                             </div>
+                        
                             <div class="mb-3">
                                 <label for="question" class="form-label">Question</label>
                                 <input type="text" name="question" id="question" class="form-control" required>
                             </div>
-                    
+                        
                             <div class="mb-3">
                                 <label class="form-label">Type</label>
                                 <div class="form-check">
-                                    <input type="radio" name="type" value="radio" id="type_radio" class="form-check-input type-selector" required>
+                                    <input type="radio" name="type" value="radio" id="type_radio" checked class="form-check-input type-selector" required>
                                     <label for="type_radio" class="form-check-label">Single Choice (Radio)</label>
                                 </div>
-                                <div class="form-check">
-                                    <input type="radio" name="type" value="checkbox" id="type_checkbox" class="form-check-input type-selector" required>
-                                    <label for="type_checkbox" class="form-check-label">Multiple Choice (Checkbox)</label>
+                            </div>
+                        
+                            <div id="optionsContainer">
+                                <div class="option-group mb-3 d-flex align-items-center">
+                                    <div class="w-100">
+                                        <label class="form-label option-label">Options 1</label>
+                                        <input type="hidden" name="options_id[]" value="1">
+                                        <input type="text" name="options_question[]" class="form-control mb-2" required>
+                                    </div>
+                                    <button type="button" class="btn btn-success me-2 addMore">➕</button>
                                 </div>
                             </div>
-                    
-                            <div id="options-container">
-                                @for ($i = 0; $i < 4; $i++) <!-- Updated to zero-based index -->
-                                    <div class="mb-3 d-flex align-items-center">
-                                        <!-- Correct option radio for single choice -->
-                                        <input type="radio" name="correct_option[]" value="{{ $i }}" class="form-check-input me-2 type-radio">
-                                        <!-- Correct option checkbox for multiple choice -->
-                                        <input type="checkbox" name="correct_option[]" value="{{ $i }}" class="form-check-input me-2 type-checkbox d-none">
-                                        <!-- Option text field -->
-                                        <input type="text" name="options[{{ $i }}]" placeholder="Option {{ $i + 1 }}" class="form-control" required>
-                                    </div>
-                                @endfor
-                            </div>
-                            
-                    
+                        
+                            <!-- Hidden input to store JSON data -->
+                            <input type="hidden" name="options_json" id="options_json">
+                        
                             <button type="submit" class="btn btn-success">Save Question</button>
                         </form>
+                        
                     </div>
                 </div>
             </div>
@@ -70,14 +68,58 @@
     </div>
 
     <script>
-        document.querySelectorAll('.type-selector').forEach((input) => {
-    input.addEventListener('change', (e) => {
-        const isRadio = e.target.value === 'radio';
-        document.querySelectorAll('.type-radio').forEach(el => el.classList.toggle('d-none', !isRadio));
-        document.querySelectorAll('.type-checkbox').forEach(el => el.classList.toggle('d-none', isRadio));
-    });
-});
+       $(document).ready(function () {
+        let optionCount = 1;
 
+        // Add More Options
+        $(document).on("click", ".addMore", function () {
+            optionCount++;
+            let newOption = `<div class="option-group mb-3 d-flex align-items-center">
+                <div class="w-100">
+                    <label class="form-label option-label">Options ${optionCount}</label>
+                    <input type="hidden" name="options_id[]" value="${optionCount}">
+                    <input type="text" name="options_question[]" class="form-control mb-2" required>
+                </div>
+                <button type="button" class="btn btn-danger ms-2 remove-option">❌</button>
+            </div>`;
+
+            $("#optionsContainer").append(newOption);
+            updateRemoveButton();
+        });
+
+        // Remove Option (Only Last)
+        $(document).on("click", ".remove-option", function () {
+            $(this).closest(".option-group").remove();
+            optionCount--;
+            updateRemoveButton();
+        });
+
+        // Ensure Only Last Option Has Remove Button
+        function updateRemoveButton() {
+            $(".remove-option").remove(); // Remove all remove buttons
+            if ($(".option-group").length > 1) {
+                $(".option-group:last").append('<button type="button" class="btn btn-danger ms-2 remove-option">❌</button>');
+            }
+        }
+
+        // Before Form Submit: Convert to JSON
+        $("#questionForm").submit(function (e) {
+            let optionsArray = [];
+
+            $(".option-group").each(function () {
+                let optionData = {
+                    options_id: $(this).find("input[name='options_id[]']").val(),
+                    options_question: $(this).find("input[name='options_question[]']").val()
+                };
+                optionsArray.push(optionData);
+            });
+
+            let jsonData = JSON.stringify(optionsArray);
+            $("#options_json").val(jsonData);
+        });
+    });
     </script>
+
+   
 
 @stop

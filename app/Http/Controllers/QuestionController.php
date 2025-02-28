@@ -34,27 +34,17 @@ class QuestionController extends Controller
     {
         // Validate input
         $validated = $request->validate([
-            'quiz_id' => 'required|exists:quizzes,id',
-            'question' => 'required|string',
-            'type' => 'required|in:radio,checkbox',
-            'options' => 'required|array|min:2|max:4', // Ensure at least two options
-            'options.*' => 'required|string', // Each option is required
-            'correct_option' => 'required|array', // Ensure correct_option is an array
-            'correct_option.*' => 'required|integer|between:0,3', // Correct option indexes must be valid
+            'quiz_id' => 'required',
+            'question' => 'required',
+            'type' => 'required'
         ]);
-
-// Map correct_option indexes to their respective option values
-        $correctOptions = collect($validated['correct_option'])
-            ->map(fn($index) => $validated['options'][$index])
-            ->toArray();
-
-// Create a new Question instance
+        $options = json_decode($request->options_json, true);
+       // Create a new Question instance
         $question = new Question();
         $question->quiz_id = $validated['quiz_id'];
         $question->question = $validated['question'];
         $question->type = $validated['type'];
-        $question->options = json_encode(array_values($validated['options'])); // Save options as JSON
-        $question->correct_options = json_encode($correctOptions); // Save correct options as JSON
+        $question->options = json_encode($options); // Save options as JSON
         $question->save(); // Save the question to the database
 
         // Redirect the user back to the question list or any desired route
@@ -108,23 +98,17 @@ class QuestionController extends Controller
     {
         // Validate the incoming request data
         $validated = $request->validate([
-            'question' => 'required|string|max:255',
-            'type' => 'required|in:radio,checkbox',
-            'options' => 'required|array|min:1',
-            'options.*' => 'required|string|max:255', // Ensure each option is a valid string
-            'correct_option' => 'required|array|min:1', // Correct options must be an array
+            'quiz_id' => 'required',
+            'question' => 'required',
+            'type' => 'required'
         ]);
 
-// Ensure correct options are valid based on the provided options
-        $options = $validated['options']; // Array of options from the form
-        $correctOptions = array_intersect($validated['correct_option'], $options); // Keep only valid correct options
 
-// Update the question data
+        $options = json_decode($request->options_json, true);
+        $question->quiz_id = $validated['quiz_id'];
         $question->question = $validated['question'];
         $question->type = $validated['type'];
         $question->options = json_encode($options); // Save options as JSON array
-        $question->correct_options = json_encode(array_values($correctOptions)); // Save correct options as JSON array
-
         $question->save();
 
         // Redirect the user back to the question list or any desired route

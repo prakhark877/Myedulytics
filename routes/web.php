@@ -12,7 +12,7 @@ use App\Http\Controllers\QuestionController;
 use App\Http\Controllers\QuizAttemptAnswerController;
 use App\Http\Controllers\CmsPagesController;
 use App\Http\Controllers\AgeGroupsController;
-
+use App\Http\Controllers\QuizzesAnswerController;
 
 /*
 |--------------------------------------------------------------------------
@@ -55,6 +55,8 @@ Route::group(['prefix' => 'super-admin'], function () {
     Route::resource('subcategories', SubcategoryController::class);
     Route::resource('quizzes', QuizController::class);
     Route::resource('questions', QuestionController::class);
+    Route::resource('quizzes-answer', QuizzesAnswerController::class);
+    
     Route::resource('cms_pages', CmsPagesController::class);
     Route::resource('age-groups', AgeGroupsController::class);
     
