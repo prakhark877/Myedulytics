@@ -11,8 +11,13 @@
                     <div class="col-12">
                         <h3>Quizzes Answer</h3>
                         <div class="add-category">
-                            <a href="{{ route('quizzes-answer.create') }}" class="btn btn-primary">Add New Questions</a>
+                            {{-- <a href="{{ route('quizzes-answer.create') }}" class="btn btn-primary">Add New Questions</a> --}}
                         </div>
+                        @if (session('error'))
+                        <div class="alert alert-danger">
+                            {{ session('error') }}
+                        </div>
+                    @endif
                         <table class="table table-bordered table-hover">
                             <thead>
                                 <tr>
@@ -22,19 +27,13 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @forelse($quizzes_answer as $index => $answer)
+                                @forelse($quizzes as $index => $answer)
                                     <tr>
                                         <td>{{ $index + 1 }}</td>
                                         <td>{{ $answer->title }}</td>
                                         <td>
-                                            <a href="{{ route('quizzes-answer.edit', $question->id) }}" class="btn btn-warning btn-sm">Edit</a>
+                                            <a href="{{ route('quizzes-answer.edit', $answer->id) }}" class="btn btn-warning btn-sm">Add Result</a>
                                             
-                                            <!-- Delete Form -->
-                                            <form action="{{ route('quizzes-answer.destroy', $question->id) }}" method="POST" style="display:inline-block;">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this Quizzes Answer?')">Delete</button>
-                                            </form>
                                         </td>
                                     </tr>
                                 @endforeach

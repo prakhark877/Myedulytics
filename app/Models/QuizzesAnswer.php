@@ -10,32 +10,12 @@ class QuizzesAnswer extends Model
     use HasFactory;
     protected $table = 'quizzes_answer'; // Table name explicitly define karein
     protected $primaryKey = 'id'; // Primary key set karein
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array
-     */
+    public $timestamps = true; // Agar timestamps (created_at, updated_at) use ho rahe hain
     protected $fillable = [
-        'result_options',
+        'options_id',
         'quiz_id',
+        'options_result'
     ];
-
-    /**
-     * The attributes that should be cast to native types.
-     *
-     * @var array
-     */
-    protected $casts = [
-        'result_options' => 'array',  // Automatically cast options as an array
-    ];
-
-    /**
-     * Define a relationship with the Quiz model.
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
-     */
-    public function quiz()
-    {
-        return $this->belongsTo(Quiz::class);
-    }
+    public $incrementing = true;
+   
 }

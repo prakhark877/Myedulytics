@@ -14,7 +14,8 @@ return new class extends Migration
         Schema::create('quizzes_answer', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('quiz_id');
-            $table->longText('result_options')->nullable(); // Store options as a JSON array
+            $table->unsignedBigInteger('options_id')->nullable();
+            $table->longText('options_result')->nullable(); // Store options as a JSON array
             $table->timestamps();
             $table->foreign('quiz_id')->references('id')->on('quizzes')->onDelete('cascade');
         });
