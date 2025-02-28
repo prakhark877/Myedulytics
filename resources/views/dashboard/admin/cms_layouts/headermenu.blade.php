@@ -135,6 +135,14 @@
           </a> 
         </li>
         <li class="nav-item has-treeview">
+          <a href="/super-admin/age-groups" class="nav-link">
+            <i class="nav-icon fas fa-copy"></i>
+            <p>Age Groups
+              <span class="badge badge-info right">1</span>
+            </p>
+          </a> 
+        </li>
+        <li class="nav-item has-treeview">
           <a href="/super-admin/quizzes" class="nav-link">
             <i class="nav-icon fas fa-copy"></i>
             <p>Quizzes
@@ -145,31 +153,24 @@
         <li class="nav-item has-treeview">
           <a href="/super-admin/questions" class="nav-link">
             <i class="nav-icon fas fa-copy"></i>
-            <p>Questions
+            <p>Quiz Questions
               <span class="badge badge-info right">1</span>
             </p>
           </a> 
         </li>
-        <li class="nav-item has-treeview">
+        {{-- <li class="nav-item has-treeview">
           <a href="/super-admin/cms_pages" class="nav-link">
             <i class="nav-icon fas fa-copy"></i>
             <p>Cms Pages
               <span class="badge badge-info right">1</span>
             </p>
           </a> 
-        </li>
-        <li class="nav-item has-treeview">
-          <a href="/super-admin/age-groups" class="nav-link">
-            <i class="nav-icon fas fa-copy"></i>
-            <p>Age Groups
-              <span class="badge badge-info right">1</span>
-            </p>
-          </a> 
-        </li>
+        </li> --}}
+       
         <li class="nav-item has-treeview">
           <a href="/super-admin/quizzes-answer" class="nav-link">
             <i class="nav-icon fas fa-copy"></i>
-            <p>Quizzes Answer
+            <p>Quiz Answers
               <span class="badge badge-info right">1</span>
             </p>
           </a> 

@@ -14,7 +14,8 @@ class QuizzesAnswer extends Model
     protected $fillable = [
         'options_id',
         'quiz_id',
-        'options_result'
+        'options_result',
+        'options_description'
     ];
     public $incrementing = true;
    

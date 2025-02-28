@@ -16,6 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('quiz_id');
             $table->unsignedBigInteger('options_id')->nullable();
             $table->longText('options_result')->nullable(); // Store options as a JSON array
+            $table->longText('options_description')->nullable();
             $table->timestamps();
             $table->foreign('quiz_id')->references('id')->on('quizzes')->onDelete('cascade');
         });

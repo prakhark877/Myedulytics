@@ -43,8 +43,10 @@
                             <div class="w-100">
                                 <label class="form-label option-label">Options {{ $optionCount }} Result</label>
                                 <input type="hidden" name="options_id[]" value="{{ $option['options_id'] }}">
-                                <input type="text" name="options_result[]" class="form-control mb-2" 
+                                <input type="text" name="options_result[]" class="form-control mb-2" placeholder="Title"
                                     value="{{ $matchedAnswer ? $matchedAnswer['options_result'] : '' }}" required>
+                                  
+                                    <textarea name="options_description[]" id="options_description" cols="60" rows="2">{{ $matchedAnswer ? $matchedAnswer['options_description'] : '' }}</textarea>  
                             </div>
                         </div>
                     @endforeach
@@ -73,7 +75,8 @@
             $(".option-group").each(function () {
                 let optionData = {
                     options_id: $(this).find("input[name='options_id[]']").val(),
-                    options_result: $(this).find("input[name='options_result[]']").val()
+                    options_result: $(this).find("input[name='options_result[]']").val(),
+                    options_description: $(this).find("textarea[name='options_description[]']").val()
                 };
                 optionsArray.push(optionData);
             });

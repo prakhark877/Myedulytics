@@ -78,7 +78,9 @@ class QuizzesAnswerController extends Controller
             QuizzesAnswer::create([
                 'quiz_id' => $validated['quiz_id'],
                 'options_id' => $option['options_id'],
-                'options_result' => $option['options_result']
+                'options_result' => $option['options_result'],
+                'options_description' => $option['options_description']
+                
             ]);
         }
 
