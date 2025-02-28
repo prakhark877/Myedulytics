@@ -20,7 +20,7 @@ class QuizController extends Controller
         }
         // Get Filtered Quizzes
         $quizzes = Quiz::select('quizzes.*', 'age_groups.name as age_group_name')
-        ->join('age_groups', 'quizzes.age_group_id', '=', 'age_groups.id')
+        ->leftJoin('age_groups', 'quizzes.age_group_id', '=', 'age_groups.id')
         ->with(['category', 'subcategory']) // Load related category & subcategory
         ->get();
        // return  $quizzes;

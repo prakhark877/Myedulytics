@@ -38,7 +38,8 @@
                   var d = JSON.parse(data);
                   //debugger;
                   if (d.success == false) {
-                      alert("token error " + d.message);
+                    //  alert("token error " + d.message);
+                      console.log(token error)
                       return false;
                   }
                   identity_id = d.identity_id;
@@ -70,7 +71,7 @@
               },
               error: function (error) {
                   //   debugger;
-                  alert("Error token : ", error);
+                 // alert("Error token : ", error);
                   return false;
                   console.log(error.statusText);
               },
@@ -124,7 +125,7 @@ function uploadS3File(fileUploaderid) {
             
             if (err) {
                 console.error("Error uploading file:", err);
-                alert("Error uploading file: " + err.message);
+                //alert("Error uploading file: " + err.message);
             } else {
                 console.log("File uploaded successfully:", res);
                 $("#img" + fileUploaderid).attr("src", cloudfront_url + "/uploads/" + fileName);

@@ -39,7 +39,7 @@
                                 <select name="age_group_id" id="age_group_id" class="form-control" required>
                                     <option value="">Select Age Group</option>
                                     @foreach ($age_group as $age)
-                                    <option value="{{ $age['value'] }}">{{ $age['name'] }}</option>
+                                    <option value="{{ $age['id'] }}">{{ $age['name'] }}</option>
                                     @endforeach
                                 </select>
                             </div>
