@@ -9,6 +9,8 @@ use Illuminate\Http\Request;
 use App\utilities\helper;
 use Illuminate\Support\Facades\Log;
 use App\Models\AgeGroups;
+use App\Models\QuizzesAnswer;
+
 
 class QuizController extends Controller
 {
@@ -101,5 +103,18 @@ class QuizController extends Controller
         $subcategories = Subcategory::where('category_id', $request->category_id)->get();
         return response()->json($subcategories);
     }
+
+    public function getQuizAnswer(Request $request)
+{
+    $optionsId = $request->options_id;
+
+    $answer = QuizzesAnswer::where('options_id', $optionsId)->first();
+
+    if ($answer) {
+        return response()->json(['success' => true, 'data' => $answer]);
+    } else {
+        return response()->json(['success' => false, 'message' => 'No data found']);
+    }
+}
 }
 

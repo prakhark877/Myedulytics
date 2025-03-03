@@ -266,9 +266,9 @@
                         $escaped_correct_answer_data = urlencode($correct_answer11);
                         ?>
                         <div class="form-grou-quiz form-grou" id="quiz_{{ $question['id'] }}">
-                            <input type="hidden" id="correct_answer_{{ $question['id'] }}"
+                            {{-- <input type="hidden" id="correct_answer_{{ $question['id'] }}"
                                 name="correct_answer_{{ $question['id'] }}" value="{{ $escaped_correct_answer_data }}"
-                                class="quiz-answer-inputs">
+                                class="quiz-answer-inputs"> --}}
 
                             <label>{{ $question['question'] }}</label>
 
@@ -290,11 +290,10 @@
                             @elseif ($question['type'] === 'radio')
                                 @foreach ($options as $index => $option)
                                     <div class="redio-div">
-                                        <input type="radio" id="{{ $question['id'] }}_{{ $index }}"
-                                            name="{{ $question['id'] }}" value="{{ $option }}" class="quiz-inputs">
-                                        <label class="form-check-label redio-label"
-                                            for="{{ $question['id'] }}_{{ $index }}">
-                                            {{ $option }}
+                                        <input type="radio" id="{{ @$question['id'] }}_{{ @$option['options_id'] }}"
+                                            name="{{ @$question['id'] }}" value="{{ @$option['options_id'] }}" class="quiz-inputs">
+                                        <label class="form-check-label redio-label" for="{{ @$question['id'] }}_{{ @$option['options_id'] }}">
+                                            {{ $option['options_question'] }}
                                         </label>
                                     </div>
                                 @endforeach
@@ -324,7 +323,9 @@
         <!-- result-section -->
         <div class="result-container mt-5" style="display:none;">
             <div class="result-grid">
-                <div class="result-box">
+
+                <div id="result_section" style="width: 80%; "></div>
+                {{-- <div class="result-box">
                     <p>Total Questions</p>
                     <h2><span id="quiz_total_questions"></span></h2>
                 </div>
@@ -339,7 +340,7 @@
                 <div class="result-box">
                     <p>Result (%)</p>
                     <h2><span id="quiz_total_result"></span>%</h2>
-                </div>
+                </div> --}}
             </div>
             <div class="continue-btn">
                 <a href="/quiz-list" class="btn continue-button">Continue</a>
@@ -348,11 +349,98 @@
 
 
     </div>
-
+    <input type="hidden" id="max_selected_option" name="max_selected_option">
     <br><br><br><br><br><br><br>
 
     <script src="https://cdn.jsdelivr.net/jquery.validation/1.16.0/jquery.validate.min.js"></script>
     <script>
+
+$(document).ready(function () {
+    let optionCounts = {}; // Empty object for dynamic options
+    let previousSelections = {}; // Har question ki previous selection track karne ke liye
+
+    // Sabhi radio buttons ki unique values ko fetch karke initialize karein
+    $(".quiz-inputs").each(function () {
+        let optionValue = $(this).val();
+        if (!optionCounts[optionValue]) {
+            optionCounts[optionValue] = 0;
+        }
+    });
+
+    $(".quiz-inputs").on("change", function () {
+        let questionId = $(this).attr("name"); // Question ka unique name
+        let selectedValue = $(this).val(); // Selected option ka value
+
+        // Pehle wale selection ko count se kam karein
+        if (previousSelections[questionId]) {
+            let prevValue = previousSelections[questionId];
+            if (optionCounts[prevValue] > 0) {
+                optionCounts[prevValue]--;
+            }
+        }
+
+        // Naye selection ko update karein
+        previousSelections[questionId] = selectedValue;
+
+        // Count ko increase karein
+        optionCounts[selectedValue]++;
+
+        // Object ko array mein convert karein
+        let optionList = Object.keys(optionCounts).map(key => ({
+            option: key,
+            count: optionCounts[key]
+        }));
+
+        // Sabse zyada count wale option ko dhundhein
+        let maxOption = optionList.reduce((max, current) => (current.count > max.count ? current : max), { option: "", count: 0 });
+
+        // Hidden field me sabse zyada selected option ka value set karein
+        $("#max_selected_option").val(maxOption.option);
+
+        console.log(optionList); // Debugging ke liye console pe dikhana
+        console.log("Max Selected Option:", maxOption.option);
+    });
+});
+
+
+
+$(document).ready(function () {
+    $("#submitBTN").on("click", function () {
+        let maxSelectedOptionId = $("#max_selected_option").val(); // Hidden field se max option ID lein
+
+        if (!maxSelectedOptionId) {
+            alert("No option selected yet.");
+            return;
+        }
+
+        $.ajax({
+            url: "/get-quiz-answer", // Server-side route
+            type: "GET",
+            data: { options_id: maxSelectedOptionId }, // Send selected option ID
+            success: function (response) {
+                if (response.success) {
+                    let data = response.data;
+                    $("#result_section").html(`
+                        <h3>${data.options_result}</h3>
+                        <p>${data.options_description}</p>
+                    `);
+                } else {
+                    alert("No matching record found.");
+                }
+            },
+            error: function () {
+                alert("Error fetching data.");
+            }
+        });
+    });
+});
+
+
+
+
+
+
+
         $(document).ready(function() {
             customFormSave("dd");
         });
@@ -365,140 +453,140 @@
 
         var vrArray = [];
         
-        function customFormSave(formId) {
-            if (formId) {
-                $("#" + formId).validate({
-                    ignore: ":hidden",
-                    rules: {
-                        phone: {
-                            required: true,
-                            maxlength: 10,
-                            minlength: 10
-                        },
-                    },
-                    submitHandler: function(form) {
+        // function customFormSave(formId) {
+        //     if (formId) {
+        //         $("#" + formId).validate({
+        //             ignore: ":hidden",
+        //             rules: {
+        //                 phone: {
+        //                     required: true,
+        //                     maxlength: 10,
+        //                     minlength: 10
+        //                 },
+        //             },
+        //             submitHandler: function(form) {
 
-                        $(".loaderCustomFormSaveBtn").show();
+        //                 $(".loaderCustomFormSaveBtn").show();
 
-                        var inputs = $("#" + formId + " :input");
-                        //console.log(inputs);
-                        // geeting all request for these file custom_form_json_payload.js
-                        let JSONData = {};
+        //                 var inputs = $("#" + formId + " :input");
+        //                 //console.log(inputs);
+        //                 // geeting all request for these file custom_form_json_payload.js
+        //                 let JSONData = {};
 
-                        var custom_form_id = formId.split('custom_form_')[1];
-                        //var redirect_url = $("#" + formId + " #redirect_url").val();
+        //                 var custom_form_id = formId.split('custom_form_')[1];
+        //                 //var redirect_url = $("#" + formId + " #redirect_url").val();
 
-                        JSONData['quiz_id'] = $("#" + formId + " #quiz_id").val();
-                        JSONData['user_id'] = $('input[name=user_id]').val();
-                        // Constructing answer array
-                        let JSONAnserData = [];
+        //                 JSONData['quiz_id'] = $("#" + formId + " #quiz_id").val();
+        //                 JSONData['user_id'] = $('input[name=user_id]').val();
+        //                 // Constructing answer array
+        //                 let JSONAnserData = [];
 
-                        // Initialize variables for calculations
-                        let totalQuestions = 0;
-                        let attemptedQuestions = 0;
-                        let correctAnswers = 0;
+        //                 // Initialize variables for calculations
+        //                 let totalQuestions = 0;
+        //                 let attemptedQuestions = 0;
+        //                 let correctAnswers = 0;
 
-                        // Iterate over each quiz group in the form
-                        $("#" + formId + " .form-grou-quiz").each(function() {
-                            totalQuestions++; // Increment total questions count
+        //                 // Iterate over each quiz group in the form
+        //                 $("#" + formId + " .form-grou-quiz").each(function() {
+        //                     totalQuestions++; // Increment total questions count
 
-                            // Extract the question name (assuming it's the unique identifier for the question)
-                            let question_name = $(this).find(".quiz-inputs").attr("name");
+        //                     // Extract the question name (assuming it's the unique identifier for the question)
+        //                     let question_name = $(this).find(".quiz-inputs").attr("name");
 
-                            // Handle checkbox and radio inputs
-                            let selectedOptions = $(this).find(".quiz-inputs:checked").map(function() {
-                                return $(this).val(); // Get the value of each selected input
-                            }).get(); // Convert to a plain array
+        //                     // Handle checkbox and radio inputs
+        //                     let selectedOptions = $(this).find(".quiz-inputs:checked").map(function() {
+        //                         return $(this).val(); // Get the value of each selected input
+        //                     }).get(); // Convert to a plain array
 
-                            // Retrieve the correct answer data using the question_name
-                            let correctAnswerString = document.getElementById('correct_answer_' +
-                                question_name)?.value;
+        //                     // Retrieve the correct answer data using the question_name
+        //                     let correctAnswerString = document.getElementById('correct_answer_' +
+        //                         question_name)?.value;
 
-                            let correctAnswerArray = [];
-                            if (correctAnswerString) {
-                                // Decode the URL-encoded string and parse as JSON
-                                correctAnswerString = decodeURIComponent(correctAnswerString).replace(
-                                    /\+/g, ' ');
-                                try {
-                                    correctAnswerArray = JSON.parse(correctAnswerString);
-                                } catch (e) {
-                                    console.error(`Error parsing JSON for question: ${question_name}`,
-                                        e);
-                                }
-                            }
+        //                     let correctAnswerArray = [];
+        //                     if (correctAnswerString) {
+        //                         // Decode the URL-encoded string and parse as JSON
+        //                         correctAnswerString = decodeURIComponent(correctAnswerString).replace(
+        //                             /\+/g, ' ');
+        //                         try {
+        //                             correctAnswerArray = JSON.parse(correctAnswerString);
+        //                         } catch (e) {
+        //                             console.error(`Error parsing JSON for question: ${question_name}`,
+        //                                 e);
+        //                         }
+        //                     }
 
-                            // Check if the question was attempted
-                            if (selectedOptions.length > 0) {
-                                attemptedQuestions++; // Increment attempted questions count
+        //                     // Check if the question was attempted
+        //                     if (selectedOptions.length > 0) {
+        //                         attemptedQuestions++; // Increment attempted questions count
 
-                                // Check if the selected options match the correct answers
-                                let isCorrect = JSON.stringify(selectedOptions.sort()) === JSON
-                                    .stringify(correctAnswerArray.sort());
-                                if (isCorrect) {
-                                    correctAnswers++; // Increment correct answers count
-                                }
-                            }
+        //                         // Check if the selected options match the correct answers
+        //                         let isCorrect = JSON.stringify(selectedOptions.sort()) === JSON
+        //                             .stringify(correctAnswerArray.sort());
+        //                         if (isCorrect) {
+        //                             correctAnswers++; // Increment correct answers count
+        //                         }
+        //                     }
 
-                            // Push the data to the JSONAnserData array
-                            JSONAnserData.push({
-                                correct_answer: correctAnswerArray, // Array of correct answers
-                                option_answer: selectedOptions, // Array of the selected options
-                                question_id: question_name // The unique question identifier
-                            });
-                        });
+        //                     // Push the data to the JSONAnserData array
+        //                     JSONAnserData.push({
+        //                         correct_answer: correctAnswerArray, // Array of correct answers
+        //                         option_answer: selectedOptions, // Array of the selected options
+        //                         question_id: question_name // The unique question identifier
+        //                     });
+        //                 });
 
-                        // Calculate Result Percentage
-                        let resultPercentage = (correctAnswers / totalQuestions) * 100;
+        //                 // Calculate Result Percentage
+        //                 let resultPercentage = (correctAnswers / totalQuestions) * 100;
 
-                        // Add the answers and results to the JSONData object
-                        JSONData['answer'] = JSONAnserData;
-
-
-                        $('#quiz_total_questions').html(totalQuestions);
-                        $('#quiz_total_result').html(resultPercentage.toFixed(2));
-                        $('#quiz_total_correct_answers').html(correctAnswers);
-                        $('#quiz_total_attempted_questions').html(attemptedQuestions);
-
-                        JSONData['total_correct_answer'] = correctAnswers;
-                        JSONData['total_attempt_question'] = attemptedQuestions;
-                        JSONData['total_attempt_time'] = $("#total_attempt_time").val();
-                        JSONData['total_questions'] = totalQuestions;
-
-                        console.log(JSONData);
-                        $.ajaxSetup({
-                            headers: {
-                            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') // Set the CSRF token header
-                            }
-                        });
-
-                        $.ajax({
-                            type: "POST", // define the type of HTTP verb we want to use (POST for our form)
-                            contentType: "application/json",
-                            url: vrApiUrl + "/quizesAttemptAnswer",
-                            data: JSON.stringify(JSONData), // our data object
-                            dataType: "json", // what type of data do we expect back from the server                                        
-                        })
-
-                            .done(function (data) {
-                                if (data.success) {
-                                  $(".loaderCustomFormSaveBtn").hide();
-                                    $(".dvMessage").html(data.message);
-                                } else {
-                                   $(".loaderCustomFormSaveBtn").hide();
-                                    $(".dvMessage").html(data.message);
-                                }
-                            });
+        //                 // Add the answers and results to the JSONData object
+        //                 JSONData['answer'] = JSONAnserData;
 
 
-                        event.preventDefault();
-                        return false; // required to block normal submit since you used ajax
-                    }
+        //                 $('#quiz_total_questions').html(totalQuestions);
+        //                 $('#quiz_total_result').html(resultPercentage.toFixed(2));
+        //                 $('#quiz_total_correct_answers').html(correctAnswers);
+        //                 $('#quiz_total_attempted_questions').html(attemptedQuestions);
 
-                });
+        //                 JSONData['total_correct_answer'] = correctAnswers;
+        //                 JSONData['total_attempt_question'] = attemptedQuestions;
+        //                 JSONData['total_attempt_time'] = $("#total_attempt_time").val();
+        //                 JSONData['total_questions'] = totalQuestions;
+
+        //                 console.log(JSONData);
+        //                 $.ajaxSetup({
+        //                     headers: {
+        //                     'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') // Set the CSRF token header
+        //                     }
+        //                 });
+
+        //                 $.ajax({
+        //                     type: "POST", // define the type of HTTP verb we want to use (POST for our form)
+        //                     contentType: "application/json",
+        //                     url: vrApiUrl + "/quizesAttemptAnswer",
+        //                     data: JSON.stringify(JSONData), // our data object
+        //                     dataType: "json", // what type of data do we expect back from the server                                        
+        //                 })
+
+        //                     .done(function (data) {
+        //                         if (data.success) {
+        //                           $(".loaderCustomFormSaveBtn").hide();
+        //                             $(".dvMessage").html(data.message);
+        //                         } else {
+        //                            $(".loaderCustomFormSaveBtn").hide();
+        //                             $(".dvMessage").html(data.message);
+        //                         }
+        //                     });
 
 
-            }
-        }
+        //                 event.preventDefault();
+        //                 return false; // required to block normal submit since you used ajax
+        //             }
+
+        //         });
+
+
+        //     }
+        // }
 
 
         /// Function for get formId js
@@ -643,76 +731,7 @@
     </script>
 
 
-    <!-- video-section-start -->
-    <div class="cb-band cb-band-panel cb-bf-chartreuse-bg">
 
-        <div class="container">
-            <div class="row align-items-center ">
-                <div class="col-xs-12 col-md-6 cb-band-panel-50-1 cb-margin-sm-down-bottom-24">
-                    <div class="cb-band-panel-content cb-align-left">
-                        <!-- header -->
-                        <div class="cb-band-panel-header1">
-
-
-
-                            <h2 class="cb-band-panel-title" id="panel-1726627715-heading">What can you do with BigFuture?
-                            </h2>
-
-                            <p class="cb-band-panel-desc" id="panel-1726627715-desc">
-                                You can check out careers you’re interested in. You can find colleges based on what’s
-                                important to you.
-                                You can discover ways to pay for college.
-                            </p>
-
-
-                        </div>
-                        <!-- footer -->
-                        <div class="cb-band-panel-footer">
-
-                            <a href="#" class="cb-btn cb-btn-black">About BigFuture</a>
-
-                        </div>
-
-                    </div>
-                </div>
-                <div
-                    class="col-xs-12 col-md-6 cb-band-panel-50-2 order-xs-first-only order-sm-first-only cb-margin-sm-down-bottom-24">
-                    <div class="cb-band-panel-media">
-                        <div class="cb-media-block cb-video-block">
-                            <a href="#" class="cb-custom-outline">
-
-
-
-
-                                <img class="cb-img-fluid cb-active-effect"
-                                    src="/images/CS_BF_Homepage_Brand_vid_thumb_1920x1080_final.png"
-                                    alt="BigFuture Your Future, Your Way">
-
-                                <div class="cb-video-effect cb-black1-bg cb-opacity-7">
-                                    <span class="cb-icon cb-play-video cb-white-color"></span>
-                                </div>
-                            </a>
-                        </div>
-
-                        <div class="cb-modal  cb-video-modal" id="NBy4MuPwcgE">
-                            <div class="cb-modal-overlay">
-                                <div class="cb-modal-container">
-                                    <div class="cb-modal-content">
-                                        <iframe src=""
-                                            data-cb-src="https://www.youtube.com/embed/NBy4MuPwcgE?autoplay=1&amp;modestbranding=1&amp;playsinline=0&amp;rel=0"
-                                            title="YouTube - College Board Watch video BigFuture: Plan for College, Pay for College, and Explore Careers"
-                                            frameborder="0" allowfullscreen=""></iframe>
-                                    </div>
-
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- video-section-end -->
 
 
 

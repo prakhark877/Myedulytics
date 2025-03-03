@@ -72,16 +72,19 @@ class QuizzesAnswerController extends Controller
         $validated = $request->validate([
             'quiz_id' => 'required'
         ]);
-         QuizzesAnswer::where('quiz_id',$validated['quiz_id'])->delete();
+        // QuizzesAnswer::where('quiz_id',$validated['quiz_id'])->delete();
         $options_result_json = json_decode($request->options_result_json, true);
         foreach ($options_result_json as $option) {
-            QuizzesAnswer::create([
-                'quiz_id' => $validated['quiz_id'],
-                'options_id' => $option['options_id'],
-                'options_result' => $option['options_result'],
-                'options_description' => $option['options_description']
-                
-            ]);
+            QuizzesAnswer::updateOrCreate(
+                [
+                    'quiz_id' => $validated['quiz_id'],
+                    'options_id' => $option['options_id']
+                ],
+                [
+                    'options_result' => $option['options_result'],
+                    'options_description' => $option['options_description']
+                ]
+            );
         }
 
         // Redirect the user back to the question list or any desired route

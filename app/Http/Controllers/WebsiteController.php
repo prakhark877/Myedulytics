@@ -7,6 +7,7 @@ use App\Models\Quiz;
 use App\Models\Question;
 use App\utilities\helper;
 use Illuminate\Support\Facades\Log;
+use App\Models\QuizzesAnswer;
 
 class WebsiteController extends Controller
 {
@@ -39,8 +40,13 @@ class WebsiteController extends Controller
         ->inRandomOrder()
         ->take($random_questions_count)
         ->get();
+
+        $QuizzesAnswer = QuizzesAnswer::where('quiz_id', $quizzes->id)->get();
+        
+
+       // return $questions;
       // return $questions;
-        return view('website.continue_quiz_questions', compact('quizzes','questions','user'));
+        return view('website.continue_quiz_questions', compact('quizzes','questions','user','QuizzesAnswer'));
     }
     
 

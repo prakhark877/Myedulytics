@@ -61,6 +61,7 @@ Route::group(['prefix' => 'super-admin'], function () {
     Route::resource('age-groups', AgeGroupsController::class);
     
 });
+Route::get('/get-quiz-answer', [QuizController::class, 'getQuizAnswer']);
 
 Route::get('/quiz-list', [WebsiteController::class, 'quizList']);
 Route::get('/continue-quiz/{slug}',  [WebsiteController::class, 'continueQuizQuestions']);
