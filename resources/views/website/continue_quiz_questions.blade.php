@@ -236,14 +236,14 @@
         <div class="slideshow-container">
             <div class="mySlides">
                 <div class="custom-form-heading">
-                    <h1 class="form-heading">{{ @$quizzes->title }}</h1>
+                    <h1 class="form-heading">{!! html_entity_decode(@$quizzes->title) !!}</h1>
                     <h3 class="custom-form-duration custom-form-heding"> Quiz Duration: {{ @$quizzes->duration }} Minutes
                     </h3>
                     <p class="custom-form-description custom-form-heding"> {{ @$quizzes->title }}</p>
                     <div class="custom-form-content custom-form-heding">
                         <div class="woocommerce-Tabs-panel woocommerce-Tabs-panel--description panel entry-content wc-tab"
                             id="tab-description" role="tabpanel" aria-labelledby="tab-title-description">
-                            <p> {{ @$quizzes->description }} </p>
+                            <p>{!! html_entity_decode(@$quizzes->description) !!}</p>
                         </div>
                     </div>
                 </div>
