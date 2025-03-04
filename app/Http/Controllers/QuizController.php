@@ -85,7 +85,7 @@ class QuizController extends Controller
         // Save file directly to public/quiz_images
         $title = helper::slug($request->title);
         $data['slug'] = $title;
-
+//return $data;
         $quiz->update($data);
 
         return redirect()->route('quizzes.index')->with('success', 'Quiz updated successfully.');
