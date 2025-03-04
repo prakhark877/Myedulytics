@@ -18,7 +18,7 @@
                             </div>
                         @endif
                         <form action="{{ route('questions.update', $questions->id) }}" method="POST"
-                            enctype="multipart/form-data">
+                            enctype="multipart/form-data" id="questionForm">
                             @csrf
                             @method('PUT')
                             <div class="form-group">
@@ -48,48 +48,37 @@
                                         @if ($questions->type == 'radio') checked @endif required>
                                     <label for="type_radio" class="form-check-label">Single Choice (Radio)</label>
                                 </div>
-                                <div class="form-check">
-                                    <input type="radio" name="type" value="checkbox" id="type_checkbox"
-                                        class="form-check-input type-selector"
-                                        @if ($questions->type == 'checkbox') checked @endif required>
-                                    <label for="type_checkbox" class="form-check-label">Multiple Choice (Checkbox)</label>
-                                </div>
                             </div>
 
-                            <div id="options-container">
+                            
+                            <div id="optionsContainer">
                                 @php
                                     $options = json_decode($questions->options, true);
-                                    $correctOptions = json_decode($questions->correct_options, true);
+                                    $optionCount = 0;
                                 @endphp
-                            
-                                @foreach ($options as $index => $option)
-                                    <div class="mb-3 d-flex align-items-center">
-                                        <!-- Correct option radio for single choice -->
-                                        <input type="radio" 
-                                            name="correct_option[]" 
-                                            value="{{ $option }}" 
-                                            class="form-check-input me-2 type-radio {{ $questions->type === 'radio' ? '' : 'd-none' }}"
-                                            @if (in_array($option, $correctOptions)) checked @endif>
-                            
-                                        <!-- Correct option checkbox for multiple choice -->
-                                        <input type="checkbox" 
-                                            name="correct_option[]" 
-                                            value="{{ $option }}" 
-                                            class="form-check-input me-2 type-checkbox {{ $questions->type === 'checkbox' ? '' : 'd-none' }}"
-                                            @if (in_array($option, $correctOptions)) checked @endif>
-                            
-                                        <!-- Option text field -->
-                                        <input type="text" 
-                                            name="options[]" 
-                                            placeholder="Option {{ $index + 1 }}" 
-                                            class="form-control" 
-                                            value="{{ $option }}" 
-                                            required>
+                        
+                                @foreach($options as $index => $option)
+                                    @php $optionCount++; @endphp
+                                    <div class="option-group mb-3 d-flex align-items-center">
+                                        
+                                        <div class="w-100">
+                                            <label class="form-label option-label">Options {{ $optionCount }}</label>
+                                            <input type="hidden" name="options_id[]" value="{{ $option['options_id'] }}">
+                                            <input type="text" name="options_question[]" class="form-control mb-2" 
+                                                value="{{ $option['options_question'] }}" required>
+                                        </div>
+                                        @if ($loop->first)
+                                        <button type="button" class="btn btn-success me-2 addMore">➕</button>
+                                        @endif
+                                        @if ($loop->last)
+                                            <button type="button" class="btn btn-danger ms-2 remove-option">❌</button>
+                                        @endif
                                     </div>
                                 @endforeach
                             </div>
-                            
-                            
+                           
+
+    <input type="hidden" name="options_json" id="options_json">
 
                             <button type="submit" class="btn btn-success">Update</button>
                         </form>
@@ -102,72 +91,56 @@
 
    <!-- JavaScript to toggle inputs dynamically based on type -->
 <script>
-   document.addEventListener('DOMContentLoaded', function () {
-    const typeSelectors = document.querySelectorAll('.type-selector'); // Radio buttons for type selection
-    const typeRadioInputs = document.querySelectorAll('.type-radio'); // Correct option radios
-    const typeCheckboxInputs = document.querySelectorAll('.type-checkbox'); // Correct option checkboxes
+   $(document).ready(function () {
+        let optionCount = $("#optionsContainer .option-group").length;
 
-    // Function to toggle inputs based on question type
-    function toggleInputs(questionType) {
-        // Reset correct options
-        resetCorrectOptions();
+        // Add More Options
+        $(document).on("click", ".addMore", function () {
+            optionCount++;
+            let newOption = `<div class="option-group mb-3 d-flex align-items-center">
+                <div class="w-100">
+                    <label class="form-label option-label">Options ${optionCount}</label>
+                    <input type="hidden" name="options_id[]" value="${optionCount}">
+                    <input type="text" name="options_question[]" class="form-control mb-2" required>
+                </div>
+                <button type="button" class="btn btn-danger ms-2 remove-option">❌</button>
+            </div>`;
 
-        // Toggle visibility of radio and checkbox inputs
-        if (questionType === 'radio') {
-            typeRadioInputs.forEach(input => input.classList.remove('d-none'));
-            typeCheckboxInputs.forEach(input => input.classList.add('d-none'));
-        } else if (questionType === 'checkbox') {
-            typeRadioInputs.forEach(input => input.classList.add('d-none'));
-            typeCheckboxInputs.forEach(input => input.classList.remove('d-none'));
-        }
-    }
-
-    // Function to reset all correct options
-    function resetCorrectOptions() {
-        // Uncheck all radio buttons
-        typeRadioInputs.forEach(input => {
-            input.checked = false;
+            $("#optionsContainer").append(newOption);
+            updateRemoveButton();
         });
 
-        // Uncheck all checkboxes
-        typeCheckboxInputs.forEach(input => {
-            input.checked = false;
+        // Remove Option (Only Last)
+        $(document).on("click", ".remove-option", function () {
+            $(this).closest(".option-group").remove();
+            optionCount--;
+            updateRemoveButton();
         });
-    }
 
-    // Function to initialize selected options on page render
-    function initializeInputs(questionType) {
-        if (questionType === 'radio') {
-            typeRadioInputs.forEach(input => {
-                input.classList.remove('d-none');
-            });
-            typeCheckboxInputs.forEach(input => {
-                input.classList.add('d-none');
-                input.checked = false; // Ensure checkboxes are unchecked
-            });
-        } else if (questionType === 'checkbox') {
-            typeCheckboxInputs.forEach(input => {
-                input.classList.remove('d-none');
-            });
-            typeRadioInputs.forEach(input => {
-                input.classList.add('d-none');
-                input.checked = false; // Ensure radio buttons are unchecked
-            });
+        // Ensure Only Last Option Has Remove Button
+        function updateRemoveButton() {
+            $(".remove-option").remove();
+            if ($(".option-group").length > 1) {
+                $(".option-group:last").append('<button type="button" class="btn btn-danger ms-2 remove-option">❌</button>');
+            }
         }
-    }
 
-    // Initialize input visibility and selection based on the current question type
-    const initialQuestionType = '{{ $questions->type }}';
-    initializeInputs(initialQuestionType);
+        // Before Form Submit: Convert to JSON
+        $("#questionForm").submit(function (e) {
+            let optionsArray = [];
 
-    // Add event listeners for change on type selector inputs
-    typeSelectors.forEach(selector => {
-        selector.addEventListener('change', function () {
-            const selectedType = this.value; // Get the currently selected type
-            toggleInputs(selectedType);
+            $(".option-group").each(function () {
+                let optionData = {
+                    options_id: $(this).find("input[name='options_id[]']").val(),
+                    options_question: $(this).find("input[name='options_question[]']").val()
+                };
+                optionsArray.push(optionData);
+            });
+
+            let jsonData = JSON.stringify(optionsArray);
+            $("#options_json").val(jsonData);
         });
     });
-});
 
 </script>
 @stop

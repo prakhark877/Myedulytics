@@ -7,7 +7,7 @@
             <div class="container-fluid">
                 <div class="row">
                     <div class="col-md-6 sm-12 col-lg-6 " style="margin: auto;">
-                        <h1>Add Questions</h1>
+                        <h1>Add Quizzes Answer</h1>
                         <!-- Display general error messages -->
                         @if ($errors->any())
                             <div class="alert alert-danger">
@@ -19,30 +19,18 @@
                             </div>
                         @endif
 
-                        <form action="{{ route('questions.store') }}" method="POST" id="questionForm">
+                        <form action="{{ route('quizzes-answer.store') }}" method="POST" id="questionForm">
                             @csrf
                             <div class="form-group">
                                 <label for="quiz_id">Quiz*</label>
                                 <select name="quiz_id" id="quiz_id" class="form-control" required>
                                     <option value="">Select Quiz</option>
                                     @foreach ($quizzes as $quiz)
-                                        <option value="{{ $quiz->id }}">{{ $quiz->title }}</option>
+                                        <option  value="{{ $quiz->id }}" @if ($quiz_id->id == $quiz->id) selected @endif>{{ $quiz->title }}</option>
                                     @endforeach
                                 </select>
                             </div>
-                        
-                            <div class="mb-3">
-                                <label for="question" class="form-label">Question</label>
-                                <input type="text" name="question" id="question" class="form-control" required>
-                            </div>
-                        
-                            <div class="mb-3">
-                                <label class="form-label">Type</label>
-                                <div class="form-check">
-                                    <input type="radio" name="type" value="radio" id="type_radio" checked class="form-check-input type-selector" required>
-                                    <label for="type_radio" class="form-check-label">Single Choice (Radio)</label>
-                                </div>
-                            </div>
+                            
                         
                             <div id="optionsContainer">
                                 <div class="option-group mb-3 d-flex align-items-center">
@@ -51,7 +39,6 @@
                                         <input type="hidden" name="options_id[]" value="1">
                                         <input type="text" name="options_question[]" class="form-control mb-2" required>
                                     </div>
-                                    <button type="button" class="btn btn-success me-2 addMore">➕</button>
                                 </div>
                             </div>
                         

@@ -9,6 +9,8 @@ use Illuminate\Http\Request;
 use App\utilities\helper;
 use Illuminate\Support\Facades\Log;
 use App\Models\AgeGroups;
+use App\Models\QuizzesAnswer;
+
 
 class QuizController extends Controller
 {
@@ -20,7 +22,7 @@ class QuizController extends Controller
         }
         // Get Filtered Quizzes
         $quizzes = Quiz::select('quizzes.*', 'age_groups.name as age_group_name')
-        ->join('age_groups', 'quizzes.age_group_id', '=', 'age_groups.id')
+        ->leftJoin('age_groups', 'quizzes.age_group_id', '=', 'age_groups.id')
         ->with(['category', 'subcategory']) // Load related category & subcategory
         ->get();
        // return  $quizzes;
@@ -48,17 +50,7 @@ class QuizController extends Controller
         ]);
     
         $data = $request->all();
-
-        // // Save file directly to public/quiz_images
-        // if ($request->hasFile('image') && $request->file('image')->isValid()) {
-        //     $imageName = time() . '.' . $request->file('image')->getClientOriginalExtension();
-        //     $request->file('image')->move(public_path('quiz_images'), $imageName);
-        //     $data['image'] = 'quiz_images/' . $imageName;
-
-        //     Log::info('File uploaded successfully to: ' . public_path('quiz_images/' . $imageName));
-        // } else {
-        //     Log::info('No valid file uploaded.');
-        // }
+      
         $title = helper::slug($request->title);
         $data['slug'] = $title;
 
@@ -111,5 +103,18 @@ class QuizController extends Controller
         $subcategories = Subcategory::where('category_id', $request->category_id)->get();
         return response()->json($subcategories);
     }
+
+    public function getQuizAnswer(Request $request)
+{
+    $optionsId = $request->options_id;
+
+    $answer = QuizzesAnswer::where('options_id', $optionsId)->first();
+
+    if ($answer) {
+        return response()->json(['success' => true, 'data' => $answer]);
+    } else {
+        return response()->json(['success' => false, 'message' => 'No data found']);
+    }
+}
 }
 
