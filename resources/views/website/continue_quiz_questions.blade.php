@@ -421,8 +421,8 @@ $(document).ready(function () {
                 if (response.success) {
                     let data = response.data;
                     $("#result_section").html(`
-                        <h3>${data.options_result}</h3>
-                        <p>${data.options_description}</p>
+                        <h3>${decodeURIComponent(data.options_result)}</h3>
+                        <p>${decodeURIComponent(data.options_description)}</p>
                     `);
                 } else {
                     alert("No matching record found.");
