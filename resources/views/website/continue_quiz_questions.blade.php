@@ -239,7 +239,7 @@
                     <h1 class="form-heading">{!! html_entity_decode(@$quizzes->title) !!}</h1>
                     <h3 class="custom-form-duration custom-form-heding"> Quiz Duration: {{ @$quizzes->duration }} Minutes
                     </h3>
-                    <p class="custom-form-description custom-form-heding"> {{ @$quizzes->title }}</p>
+                    <p class="custom-form-description custom-form-heding"> {!! html_entity_decode(@$quizzes->title) !!}</p>
                     <div class="custom-form-content custom-form-heding">
                         <div class="woocommerce-Tabs-panel woocommerce-Tabs-panel--description panel entry-content wc-tab"
                             id="tab-description" role="tabpanel" aria-labelledby="tab-title-description">
