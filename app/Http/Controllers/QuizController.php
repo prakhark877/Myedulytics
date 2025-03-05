@@ -44,9 +44,9 @@ class QuizController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'title' => 'required|string|max:255|unique:quizzes',
-            'category_id' => 'required|exists:categories,id',
-            'subcategory_id' => 'required|exists:subcategories,id'
+            'title' => 'required',
+            'category_id' => 'required',
+            'subcategory_id' => 'required'
         ]);
     
         $data = $request->all();
@@ -77,15 +77,15 @@ class QuizController extends Controller
         $quiz = Quiz::findOrFail($id);
 
         $request->validate([
-            'title' => 'required|string|max:255|unique:quizzes,title,' . $quiz->id,
-            'category_id' => 'required|exists:categories,id',
-            'subcategory_id' => 'required|exists:subcategories,id'
+            'title' => 'required',
+            'category_id' => 'required',
+            'subcategory_id' => 'required'
         ]);
         $data = $request->all();
         // Save file directly to public/quiz_images
         $title = helper::slug($request->title);
         $data['slug'] = $title;
-//return $data;
+        //return $data;
         $quiz->update($data);
 
         return redirect()->route('quizzes.index')->with('success', 'Quiz updated successfully.');
