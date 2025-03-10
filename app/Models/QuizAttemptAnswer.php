@@ -18,6 +18,7 @@ class QuizAttemptAnswer extends Model
         'total_correct_answer',
         'user_id',
         'answer',
+        'options_id'
     ];
 
     // Define relationships if applicable

@@ -10,7 +10,7 @@ use App\utilities\helper;
 use Illuminate\Support\Facades\Log;
 use App\Models\AgeGroups;
 use App\Models\QuizzesAnswer;
-
+use App\Models\QuizAttemptAnswer;
 
 class QuizController extends Controller
 {
@@ -106,11 +106,28 @@ class QuizController extends Controller
 
     public function getQuizAnswer(Request $request)
 {
+    $user = helper::getTokenInfo();
+    if (!$user) {
+        return redirect()->route('login')->with('error', 'Token not found');
+    }
+    
     $optionsId = $request->options_id;
+    $quizId = $request->quiz_id;
 
-    $answer = QuizzesAnswer::where('options_id', $optionsId)->first();
+    $answer = QuizzesAnswer::where('quiz_id', $quizId)->where('options_id', $optionsId)->first();
 
+    
     if ($answer) {
+        $QuizAttemptAnswer = QuizAttemptAnswer::where('quiz_id', $quizId)
+        ->where('options_id', $optionsId)
+        ->where('user_id', $user['id'])->first();
+        if(empty($QuizAttemptAnswer)){
+            $QuizAttemptAnswer = new QuizAttemptAnswer();
+            $QuizAttemptAnswer->quiz_id = $quizId;
+            $QuizAttemptAnswer->options_id = $optionsId;
+            $QuizAttemptAnswer->user_id = $user['id'];
+            $QuizAttemptAnswer->save();
+        }
         return response()->json(['success' => true, 'data' => $answer]);
     } else {
         return response()->json(['success' => false, 'message' => 'No data found']);

@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use App\Models\AgeGroups;
+use App\Models\QuizzesAnswer;
 
 class StudentDashboardController extends Controller
 {
@@ -131,9 +132,21 @@ class StudentDashboardController extends Controller
         if (! $user) {
             return redirect()->route('login')->with('error', 'Token not found');
         }
-        $QuizAttemptAnswer = QuizAttemptAnswer::where('quiz_attempt_answer.user_id', $user->id)->join('quizzes', 'quizzes.id', '=', 'quiz_attempt_answer.quiz_id')
-            ->select('quiz_attempt_answer.*', 'quizzes.title')->get();
-
+        $attempt = QuizAttemptAnswer::from('quiz_attempt_answer')
+        ->where('quiz_attempt_answer.user_id', $user->id)
+        ->select('quiz_id', 'options_id')
+        ->get();
+    
+    // Quiz IDs aur Options IDs alag-alag extract karein
+    $quizIds = $attempt->pluck('quiz_id');
+    $optionsIds = $attempt->pluck('options_id');
+    
+    // Ab `quizzes_answer` table se filter karein
+    $QuizAttemptAnswer = QuizzesAnswer::whereIn('quizzes_answer.quiz_id', $quizIds)
+        ->whereIn('quizzes_answer.options_id', $optionsIds)
+        ->join('quizzes', 'quizzes.id', '=', 'quizzes_answer.quiz_id')
+        ->select('quizzes_answer.*', 'quizzes.title')
+        ->get();
         // return $questions;
         return view('dashboard.student.student_attempt_quiz', compact('QuizAttemptAnswer', 'user'));
     }

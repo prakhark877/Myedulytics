@@ -52,21 +52,19 @@ div#example2_info {
                 <table id="example2" class="table table-bordered table-hover">
                   <thead>
                   <tr>
+                    <th>Result Id</th>
+                    <th>Result</th>
                     <th>Quiz Name</th>
-                    <th>Total Questions</th>
-                    <th>Attempted Questions</th>
-                    <th>Correct Answers</th>
-                    <th>Result (%)</th>
+                    <th>Date</th>
                   </tr>
                   </thead>
                   <tbody>
                   @foreach($QuizAttemptAnswer as $key=> $val)
                   <tr>
+                    <td>{{$val->options_id}}</td>
+                    <td>{{$val->options_result}}</td>
                     <td>{{$val->title}}</td>
-                    <td>{{$val->total_questions}}</td>
-                    <td>{{$val->total_attempt_question}}</td>
-                    <td>{{$val->total_correct_answer}}</td>
-                    <td>{{ $val->total_questions > 0 ? number_format(($val->total_correct_answer / $val->total_questions) * 100, 2) : 0 }}%</td>
+                    <td>{{$val->created_at}}</td>
                   </tr>
                   @endforeach
                 </tbody>
