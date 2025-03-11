@@ -132,22 +132,19 @@ class StudentDashboardController extends Controller
         if (! $user) {
             return redirect()->route('login')->with('error', 'Token not found');
         }
-        $attempt = QuizAttemptAnswer::from('quiz_attempt_answer')
+    
+        $QuizAttemptAnswer = QuizAttemptAnswer::from('quiz_attempt_answer')
         ->where('quiz_attempt_answer.user_id', $user->id)
-        ->select('quiz_id', 'options_id')
-        ->get();
-    
-    // Quiz IDs aur Options IDs alag-alag extract karein
-    $quizIds = $attempt->pluck('quiz_id');
-    $optionsIds = $attempt->pluck('options_id');
-    
-    // Ab `quizzes_answer` table se filter karein
-    $QuizAttemptAnswer = QuizzesAnswer::whereIn('quizzes_answer.quiz_id', $quizIds)
-        ->whereIn('quizzes_answer.options_id', $optionsIds)
+        ->join('quizzes_answer', 'quizzes_answer.id', '=', 'quiz_attempt_answer.quizzes_answer_id')
         ->join('quizzes', 'quizzes.id', '=', 'quizzes_answer.quiz_id')
-        ->select('quizzes_answer.*', 'quizzes.title')
+        ->join('users', 'users.id', '=', 'quiz_attempt_answer.user_id') // Join users table
+        ->select(
+            'quizzes_answer.*', 
+            'quizzes.title', 
+            'users.first_name', 
+            'users.last_name'
+        )
         ->get();
-        // return $questions;
         return view('dashboard.student.student_attempt_quiz', compact('QuizAttemptAnswer', 'user'));
     }
 

@@ -45,6 +45,7 @@ Route::get('student-attempt-quiz', [StudentDashboardController::class, 'userAtte
 Route::get('student-filter-quiz', [StudentDashboardController::class, 'studentFilterQuizList'])->name('studentFilterQuizList');
 Route::post('/get-subcategories', [QuizController::class, 'getSubcategories'])->name('get.subcategories');
 
+Route::get('attempt-quiz', [AdminDashboardController::class, 'attemptQuizList'])->name('attemptQuizList');
 /* Admin Dashboard Get Route */
 Route::get('/s3/token', [AdminDashboardController::class, 'getS3Token']);
 Route::get('/admin-dashboard', [AdminDashboardController::class, 'adminDashboard'])->name('adminDashboard');

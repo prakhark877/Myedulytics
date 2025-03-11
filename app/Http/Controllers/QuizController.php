@@ -123,6 +123,7 @@ class QuizController extends Controller
         ->where('user_id', $user['id'])->first();
         if(empty($QuizAttemptAnswer)){
             $QuizAttemptAnswer = new QuizAttemptAnswer();
+            $QuizAttemptAnswer->quizzes_answer_id = $answer['id'];
             $QuizAttemptAnswer->quiz_id = $quizId;
             $QuizAttemptAnswer->options_id = $optionsId;
             $QuizAttemptAnswer->user_id = $user['id'];

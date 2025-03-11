@@ -12,6 +12,10 @@ use Aws\S3\S3Client;
 use Aws\CognitoIdentity\CognitoIdentityClient;
 use Aws\CloudFront\CloudFrontClient;
 use Aws\Connect\ConnectClient;
+use Carbon\Carbon;
+use App\Models\AgeGroups;
+use App\Models\QuizzesAnswer;
+use App\Models\QuizAttemptAnswer;
 
 class AdminDashboardController extends Controller
 {
@@ -170,4 +174,27 @@ class AdminDashboardController extends Controller
         return view("dashboard.admin.student_list", ['users' => $users, 'todt' => $todt, 'fromdt' => $fromdt, 'search' => $search]);
     }
 
+
+    public function attemptQuizList()
+    {
+        $user = helper::getTokenInfo();
+        if (! $user) {
+            return redirect()->route('login')->with('error', 'Token not found');
+        }
+        $QuizAttemptAnswer = QuizAttemptAnswer::from('quiz_attempt_answer')
+        ->join('quizzes_answer', 'quizzes_answer.id', '=', 'quiz_attempt_answer.quizzes_answer_id')
+        ->join('quizzes', 'quizzes.id', '=', 'quizzes_answer.quiz_id')
+        ->join('users', 'users.id', '=', 'quiz_attempt_answer.user_id') // Join users table
+        ->select(
+            'quizzes_answer.*', 
+            'quizzes.title', 
+            'users.first_name', 
+            'users.last_name'
+        )
+        ->get();
+
+        return view('dashboard.admin.attempt_quiz', compact('QuizAttemptAnswer', 'user'));
+    }
+
+   
 }
