@@ -52,20 +52,20 @@ div#example2_info {
                 <table id="example2" class="table table-bordered table-hover">
                   <thead>
                   <tr>
+                    <th>User Name</th>
                     <th>Quiz Name</th>
+                    <th>Result</th>
                     <th>Result Id</th>
-                    
-                    <th>Quiz Result</th>
                     <th>Date</th>
                   </tr>
                   </thead>
                   <tbody>
                   @foreach($QuizAttemptAnswer as $key=> $val)
                   <tr>
-                    <td>{{$val->title}}</td>
-                    <td>{{$val->options_id}}</td>
-                   
+                    <td>{{$val->first_name}} {{$val->last_name}}</td>
                     <td>{{$val->options_result}}</td>
+                    <td>{{$val->options_id}}</td>
+                    <td>{{$val->title}}</td>
                     <td>{{$val->created_at}}</td>
                   </tr>
                   @endforeach

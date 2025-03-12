@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use App\Models\AgeGroups;
+use App\Models\QuizzesAnswer;
 
 class StudentDashboardController extends Controller
 {
@@ -131,10 +132,19 @@ class StudentDashboardController extends Controller
         if (! $user) {
             return redirect()->route('login')->with('error', 'Token not found');
         }
-        $QuizAttemptAnswer = QuizAttemptAnswer::where('quiz_attempt_answer.user_id', $user->id)->join('quizzes', 'quizzes.id', '=', 'quiz_attempt_answer.quiz_id')
-            ->select('quiz_attempt_answer.*', 'quizzes.title')->get();
-
-        // return $questions;
+    
+        $QuizAttemptAnswer = QuizAttemptAnswer::from('quiz_attempt_answer')
+        ->where('quiz_attempt_answer.user_id', $user->id)
+        ->join('quizzes_answer', 'quizzes_answer.id', '=', 'quiz_attempt_answer.quizzes_answer_id')
+        ->join('quizzes', 'quizzes.id', '=', 'quizzes_answer.quiz_id')
+        ->join('users', 'users.id', '=', 'quiz_attempt_answer.user_id') // Join users table
+        ->select(
+            'quizzes_answer.*', 
+            'quizzes.title', 
+            'users.first_name', 
+            'users.last_name'
+        )
+        ->get();
         return view('dashboard.student.student_attempt_quiz', compact('QuizAttemptAnswer', 'user'));
     }
 

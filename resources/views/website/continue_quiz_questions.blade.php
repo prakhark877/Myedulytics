@@ -412,11 +412,12 @@ $(document).ready(function () {
             alert("No option selected yet.");
             return;
         }
-
+       var quiz_id =  $("#quiz_id").val();
+        
         $.ajax({
             url: "/get-quiz-answer", // Server-side route
             type: "GET",
-            data: { options_id: maxSelectedOptionId }, // Send selected option ID
+            data: { options_id: maxSelectedOptionId,quiz_id: quiz_id}, // Send selected option ID
             success: function (response) {
                 if (response.success) {
                     let data = response.data;
