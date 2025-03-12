@@ -63,9 +63,9 @@ div#example2_info {
                   @foreach($QuizAttemptAnswer as $key=> $val)
                   <tr>
                     <td>{{$val->first_name}} {{$val->last_name}}</td>
-                    <td>{{$val->options_result}}</td>
-                    <td>{{$val->options_id}}</td>
                     <td>{{$val->title}}</td>
+                    <td>{{$val->options_id}}</td>
+                    <td>{{$val->options_result}}</td>
                     <td>{{$val->created_at}}</td>
                   </tr>
                   @endforeach
