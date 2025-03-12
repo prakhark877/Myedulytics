@@ -1,4 +1,4 @@
-@extends('dashboard.student.layout.template')
+@extends('dashboard.admin.layout.template')
 @section('content')
     
   <div class="content-wrapper">
