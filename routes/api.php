@@ -4,7 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\StudentDashboardController;
-
+use App\Http\Controllers\TextractController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -21,7 +21,7 @@ use App\Http\Controllers\StudentDashboardController;
 // });
 
 
-
+Route::post('/extract-text', [TextractController::class, 'extractText']);
 
 Route::post('/refresh', [AuthController::class, 'refresh']);
 //Route::get('/profile', [AuthController::class, 'profile'])->middleware('auth:api');

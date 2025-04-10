@@ -13,7 +13,7 @@ use App\Http\Controllers\QuizAttemptAnswerController;
 use App\Http\Controllers\CmsPagesController;
 use App\Http\Controllers\AgeGroupsController;
 use App\Http\Controllers\QuizzesAnswerController;
-
+use App\Http\Controllers\TextractController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -44,6 +44,10 @@ Route::post('quizesAttemptAnswer', [QuizAttemptAnswerController::class, 'quizesA
 Route::get('student-attempt-quiz', [StudentDashboardController::class, 'userAttemptQuizAnswerList'])->name('userAttemptQuizAnswerList');
 Route::get('student-filter-quiz', [StudentDashboardController::class, 'studentFilterQuizList'])->name('studentFilterQuizList');
 Route::post('/get-subcategories', [QuizController::class, 'getSubcategories'])->name('get.subcategories');
+
+
+
+
 
 /* Admin Dashboard Get Route */
 Route::get('/s3/token', [AdminDashboardController::class, 'getS3Token']);
