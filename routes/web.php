@@ -13,7 +13,7 @@ use App\Http\Controllers\QuizAttemptAnswerController;
 use App\Http\Controllers\CmsPagesController;
 use App\Http\Controllers\AgeGroupsController;
 use App\Http\Controllers\QuizzesAnswerController;
-use App\Http\Controllers\TextractController;
+use App\Http\Controllers\MarksheetController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -66,6 +66,7 @@ Route::group(['prefix' => 'super-admin'], function () {
     Route::get('attempt-quiz', [AdminDashboardController::class, 'attemptQuizList'])->name('attemptQuizList');
     
 });
+Route::resource('marksheets', MarksheetController::class);
 Route::get('/get-quiz-answer', [QuizController::class, 'getQuizAnswer']);
 
 Route::get('/quiz-list', [WebsiteController::class, 'quizList']);
