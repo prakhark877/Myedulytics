@@ -30,7 +30,6 @@ class TextractController extends Controller
                 'Bytes' => $imageContent,
             ]
         ]);
-return $result->get('Blocks');
         $text = '';
         foreach ($result->get('Blocks') as $block) {
             if ($block['BlockType'] === 'WORD') {
