@@ -1,4 +1,4 @@
-@extends('dashboard.admin.layout.template')
+@extends('dashboard.student.layout.template')
 
 @section('content')
 
