@@ -39,7 +39,7 @@
                   //debugger;
                   if (d.success == false) {
                     //  alert("token error " + d.message);
-                      console.log(token error)
+                    //  console.log(token error)
                       return false;
                   }
                   identity_id = d.identity_id;
