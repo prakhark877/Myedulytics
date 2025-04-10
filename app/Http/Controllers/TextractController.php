@@ -25,13 +25,13 @@ class TextractController extends Controller
             throw new \Exception("Unable to download image from URL.");
         }
 
-        $result = $textract->detectDocumentText([
-            'Document' => [
-                'Bytes' => $imageContent,
-            ]
-        ]);
-    
-          // Combine all words into a full string
+        // Step 3: Detect text
+    $result = $textract->detectDocumentText([
+        'Document' => [
+            'Bytes' => $imageContent,
+        ]
+    ]);
+
     $text = '';
     foreach ($result->get('Blocks') as $block) {
         if ($block['BlockType'] === 'WORD') {
@@ -39,28 +39,39 @@ class TextractController extends Controller
         }
     }
 
-    // Step 1: Extract name (if pattern matches)
-    $studentName = null;
-    if (preg_match('/CERTIFIED THAT\s+([A-Z\s]+?)\s+(SHRI|SUSHRI|WHOSE)/i', $text, $nameMatches)) {
-        $studentName = trim($nameMatches[1]);
-    }
+    $text = trim($text);
 
-    // Step 2: Extract all potential subject + marks rows (flexible)
+    // Step 4: Extract Name
+    preg_match('/CERTIFIED THAT\s+([A-Z\s]+)\s+SHRI|SUSHRI/i', $text, $nameMatch);
+    $name = isset($nameMatch[1]) ? trim($nameMatch[1]) : null;
+
+    // Step 5: Extract Subjects & Marks
+    preg_match_all('/([A-Z\[\]\&\.\s]+)\s+(\d{3})\s+(\d{2,3})\s+(\d{2,3})\s+(\d{2,3})/', $text, $matches, PREG_SET_ORDER);
+
     $subjects = [];
- // This regex tries to find lines like:
-    // SUBJECT_NAME 100 33 061 061  or SUBJECT_NAME 75 25 050 015 etc.
-    preg_match_all('/([A-Z&\[\]\/\s\.]+?)\s+(\d{2,3})\s+(\d{2,3})\s+(\d{2,3})\s+(\d{2,3})/', $text, $matches, PREG_SET_ORDER);
-
     foreach ($matches as $match) {
-        $subjectName = trim($match[1]);
+        $subjectRaw = trim($match[1]);
 
-        // Skip junk subjects
-        if (strlen($subjectName) < 3 || str_word_count($subjectName) < 1) {
+        // Skip known non-subject lines
+        if (preg_match('/^(MAX|MIN|REMARKS|TOTAL|GRAND|SUBJECTS?)/i', $subjectRaw)) {
             continue;
         }
 
+        // Skip board name junk or lines with only capital letters and no real subject
+        if (preg_match('/^[A-Z]{15,}$/', str_replace(' ', '', $subjectRaw))) {
+            continue;
+        }
+
+        // Skip if not enough words (likely junk)
+        if (str_word_count($subjectRaw) < 1) {
+            continue;
+        }
+
+        $subjectClean = preg_replace('/[^A-Z0-9\[\]\&\/\.\s]/i', '', $subjectRaw);
+        $subjectClean = trim(preg_replace('/\s+/', ' ', $subjectClean));
+
         $subjects[] = [
-            'subject' => $subjectName,
+            'subject' => $subjectClean,
             'max_marks_theory' => $match[2],
             'min_marks_theory' => $match[3],
             'obtained_theory' => $match[4],
@@ -68,10 +79,11 @@ class TextractController extends Controller
         ];
     }
 
+    // Step 6: Return response
     return response()->json([
-        'name' => $studentName,
+        'name' => $name,
         'subjects' => $subjects,
-        'raw_text' => $text, // optional: remove in production
+        'raw_text' => $text,
     ]);
 
     } catch (\Aws\Textract\Exception\TextractException $e) {
