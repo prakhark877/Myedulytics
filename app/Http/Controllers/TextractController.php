@@ -149,6 +149,7 @@ return response()->json([
                 }
             }
     
+            // Get raw text
             $rawText = '';
             foreach ($blocks as $block) {
                 if ($block['BlockType'] === 'LINE' && isset($block['Text'])) {
@@ -156,76 +157,76 @@ return response()->json([
                 }
             }
     
-            // Extract student name
+            // ========== Extract Student Name ==========
             $studentName = null;
-            if (preg_match('/CERTIFIED THAT\s+([A-Z\s]+)\n(SHRI|SUSHRI|WHOSE|FATHER\'S)/i', $rawText, $matches)) {
+    
+            // Try matching based on known patterns
+            if (preg_match('/STUDENT[\'’`]?S NAME\s+([A-Z\s]+)/i', $rawText, $matches)) {
+                $studentName = trim($matches[1]);
+            } elseif (preg_match('/CERTIFIED THAT\s+([A-Z\s]+)\s+(SHRI|SUSHRI|WHOSE|FATHER\'S)/i', $rawText, $matches)) {
+                $studentName = trim($matches[1]);
+            } elseif (preg_match('/NAME IS\s+([A-Z\s]+)\s+(SHRI|SUSHRI)/i', $rawText, $matches)) {
                 $studentName = trim($matches[1]);
             } elseif (preg_match('/\n([A-Z]{3,}\s+[A-Z]{3,})\n(SHRI|SUSHRI)/', $rawText, $fallback)) {
                 $studentName = trim($fallback[1]);
             }
     
-            // Parse subjects and marks
-          
-            // Parse subjects and marks
-                // Parse subjects from tables (if available), otherwise fallback to raw text
-                $subjects = [];
-
-                if (!empty($tables)) {
-                    foreach ($tables as $table) {
-                        foreach ($table as $row) {
-                            if (count($row) >= 4 && is_numeric($row[1]) && is_numeric($row[2]) && is_numeric($row[3])) {
-                                $subject = strtoupper(trim($row[0]));
-                                if (
-                                    !str_contains($subject, 'TOTAL') &&
-                                    !str_contains($subject, 'GRAND') &&
-                                    !str_contains($subject, 'GRADE') &&
-                                    !str_contains($subject, 'RESULT')
-                                ) {
-                                    $subjects[] = [
-                                        'subject' => $subject,
-                                        'max_marks_theory' => $row[1],
-                                        'min_marks_theory' => $row[2],
-                                        'obtained_theory' => $row[3],
-                                        'obtained_practical' => $row[4] ?? null,
-                                    ];
-                                }
-                            }
-                        }
-                    }
+            // ========== Extract Subjects and Marks ==========
+            $subjects = [];
+            $lines = explode("\n", $rawText);
+            foreach ($lines as $line) {
+                $line = trim(preg_replace('/\s+/', ' ', $line)); // Normalize whitespace
+            
+                // Debug (optional)
+                // \Log::info("LINE: " . $line);
+            
+                // Match with practical marks (Theory + Practical + Total)
+                if (preg_match('/^([A-Z\s\(\)\-\+&\.]+)\s+100\s+33\s+(\d{2,3})\s+(\d{2,3})\s+(\d{2,3})$/', $line, $matches)) {
+                    $subjects[] = [
+                        'subject' => trim($matches[1]),
+                        'max_marks_theory' => 100,
+                        'min_marks_theory' => 33,
+                        'obtained_theory' => $matches[2],
+                        'obtained_practical' => $matches[3],
+                        'total' => $matches[4],
+                    ];
+                    continue;
                 }
-        
-                // Fallback: Extract subjects and marks from raw text
-                if (empty($subjects)) {
-                    $lines = explode("\n", $rawText);
-                    foreach ($lines as $line) {
-                        if (preg_match('/^([A-Z\s&\[\]]+)\s+100\s+33\s+(\d{2,3})$/i', trim($line), $matches)) {
-                            $subject = trim($matches[1]);
-                            $obtained = $matches[2];
-                            $subjects[] = [
-                                'subject' => $subject,
-                                'max_marks_theory' => 100,
-                                'min_marks_theory' => 33,
-                                'obtained_theory' => $obtained,
-                                'obtained_practical' => null,
-                            ];
-                        }
-                    }
+            
+                // Match without practical marks (Theory only + Total)
+                if (preg_match('/^([A-Z\s\(\)\-\+&\.]+)\s+100\s+33\s+\-\s+(\d{2,3})\s+\-\s+(\d{2,3})$/', $line, $matches)) {
+                    $subjects[] = [
+                        'subject' => trim($matches[1]),
+                        'max_marks_theory' => 100,
+                        'min_marks_theory' => 33,
+                        'obtained_theory' => $matches[2],
+                        'obtained_practical' => null,
+                        'total' => $matches[3],
+                    ];
+                    continue;
                 }
-        
+            
+                // Fallback: If total is present at end and subject looks valid
+                if (preg_match('/^([A-Z\s\(\)\-\+&\.]+)\s+(\d{2,3})$/', $line, $matches)) {
+                    $subjects[] = [
+                        'subject' => trim($matches[1]),
+                        'max_marks_theory' => null,
+                        'min_marks_theory' => null,
+                        'obtained_theory' => null,
+                        'obtained_practical' => null,
+                        'total' => $matches[2],
+                    ];
+                }
+            }
+    
             return response()->json([
                 'name' => $studentName,
                 'subjects' => $subjects,
                 'raw_text' => $rawText,
             ]);
     
-        } catch (\Aws\Textract\Exception\TextractException $e) {
-            return response()->json([
-                'error' => $e->getAwsErrorMessage() ?? $e->getMessage(),
-            ], 500);
         } catch (\Exception $e) {
-            return response()->json([
-                'error' => $e->getMessage(),
-            ], 500);
+            return response()->json(['error' => $e->getMessage()], 500);
         }
     }
     
