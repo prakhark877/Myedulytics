@@ -31,7 +31,7 @@ class TextractController extends Controller
                 ]
             ]);
             
-            // Combine LINE blocks instead of WORD for better context
+            // Combine LINE blocks
             $text = '';
             foreach ($result->get('Blocks') as $block) {
                 if ($block['BlockType'] === 'LINE') {
@@ -39,26 +39,37 @@ class TextractController extends Controller
                 }
             }
             
-            // Extract student name - use better pattern
+            // Normalize text
+            $text = preg_replace('/ +/', ' ', $text); // remove extra spaces
+            $text = trim($text);
+            
+            // === Extract Name === //
             $studentName = null;
             if (preg_match('/CERTIFIED THAT\s+([A-Z\s]+)\n(SHRI|SUSHRI|WHOSE|FATHER\'S)/i', $text, $matches)) {
                 $studentName = trim($matches[1]);
+            } elseif (preg_match('/\n([A-Z]{3,}\s+[A-Z]{3,})\n(SHRI|SUSHRI)/', $text, $fallback)) {
+                $studentName = trim($fallback[1]);
             } else {
-                // Try fallback if the main pattern fails
-                if (preg_match('/\n([A-Z]{3,}\s+[A-Z]{3,})\n(SHRI|SUSHRI)/', $text, $fallback)) {
-                    $studentName = trim($fallback[1]);
+                // Extra fallback: find a name-like line
+                foreach (explode("\n", $text) as $line) {
+                    if (preg_match('/^[A-Z]{3,}\s+[A-Z]{3,}$/', trim($line))) {
+                        $studentName = trim($line);
+                        break;
+                    }
                 }
             }
             
-            // Extract subjects and marks
+            // === Extract Subjects === //
             $subjects = [];
-            
             $lines = explode("\n", $text);
             foreach ($lines as $line) {
-                if (preg_match('/^([A-Z &\[\]\/\.\+]{3,})\s+(\d{2,3})\s+(\d{2,3})\s+(\d{2,3})\s+(\d{2,3})$/', trim($line), $match)) {
+                $line = trim($line);
+            
+                // Match lines with subject + 4 numbers (max, min, theory, practical)
+                if (preg_match('/^([A-Z &\[\]\/\.\+\-]+)\s+(\d{2,3})\s+(\d{2,3})\s+(\d{2,3})\s+(\d{2,3})$/', $line, $match)) {
                     $subject = trim($match[1]);
             
-                    // Skip totals or unwanted lines
+                    // Skip unwanted rows
                     if (
                         stripos($subject, 'GRAND') !== false ||
                         stripos($subject, 'TOTAL') !== false ||
@@ -83,6 +94,7 @@ class TextractController extends Controller
                 'subjects' => $subjects,
                 'raw_text' => $text,
             ]);
+            
             
         } catch (\Aws\Textract\Exception\TextractException $e) {
             return response()->json([
