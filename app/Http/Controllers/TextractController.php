@@ -24,62 +24,63 @@ class TextractController extends Controller
             if (!$imageContent) {
                 throw new \Exception("Unable to download image from URL.");
             }
-            
-            $result = $textract->detectDocumentText([
-                'Document' => [
-                    'Bytes' => $imageContent,
-                ]
-            ]);
-            
-            // Combine all detected words into a string
-            $text = '';
-            foreach ($result->get('Blocks') as $block) {
-                if ($block['BlockType'] === 'WORD') {
-                    $text .= $block['Text'] . ' ';
-                }
+             // Call Textract
+    $result = $textract->detectDocumentText([
+        'Document' => [
+            'Bytes' => $imageContent,
+        ]
+    ]);
+
+            // Read full text line-by-line
+    $text = '';
+    $lines = [];
+
+    foreach ($result->get('Blocks') as $block) {
+        if ($block['BlockType'] === 'LINE') {
+            $lines[] = $block['Text'];
+            $text .= $block['Text'] . "\n";
+        }
+    }
+
+    // Extract student name
+    $studentName = null;
+    if (preg_match('/CERTIFIED THAT\s+([A-Z\s]+?)\s+(SHRI|SUSHRI|WHOSE|FATHER\'S)/i', $text, $nameMatches)) {
+        $studentName = trim($nameMatches[1]);
+    }
+
+    // Extract subjects
+    $subjects = [];
+
+    foreach ($lines as $line) {
+        if (preg_match('/^([A-Z&\[\]\.\s\/]+)\s+(\d{2,3})\s+(\d{2,3})\s+(\d{2,3})\s+(\d{2,3})$/', trim($line), $match)) {
+            $subject = trim($match[1]);
+
+            // Filter out non-subject lines
+            if (
+                stripos($subject, 'GRAND') !== false ||
+                stripos($subject, 'TOTAL') !== false ||
+                stripos($subject, 'GRADE') !== false ||
+                stripos($subject, 'MAX') !== false ||
+                stripos($subject, 'MIN') !== false
+            ) {
+                continue;
             }
-            
-            // Extract student name (between 'CERTIFIED THAT' and 'SHRI' or similar)
-            $studentName = null;
-            if (preg_match('/CERTIFIED THAT\s+([A-Z\s]+?)\s+(SHRI|SUSHRI|WHOSE|FATHER\'S)/i', $text, $nameMatches)) {
-                $studentName = trim($nameMatches[1]);
-            }
-            
-            // Now extract subjects
-            $subjects = [];
-            
-            // Break the text into chunks using keywords like subject names or numbers
-            preg_match_all('/([A-Z&\[\]\/\.\s]{3,})\s+(\d{2,3})\s+(\d{2,3})\s+(\d{2,3})\s+(\d{2,3})/', $text, $matches, PREG_SET_ORDER);
-            
-            foreach ($matches as $match) {
-                $subject = trim($match[1]);
-            
-                // Avoid junk like GRAND TOTAL or headings
-                if (
-                    stripos($subject, 'GRAND') !== false ||
-                    stripos($subject, 'TOTAL') !== false ||
-                    stripos($subject, 'GRADE') !== false ||
-                    stripos($subject, 'MAX') !== false ||
-                    stripos($subject, 'MIN') !== false
-                ) {
-                    continue;
-                }
-            
-                $subjects[] = [
-                    'subject' => $subject,
-                    'max_marks_theory' => $match[2],
-                    'min_marks_theory' => $match[3],
-                    'obtained_theory' => $match[4],
-                    'obtained_practical' => $match[5],
-                ];
-            }
-            
-            return response()->json([
-                'name' => $studentName,
-                'subjects' => $subjects,
-                'raw_text' => $text,
-            ]);
-            
+
+            $subjects[] = [
+                'subject' => $subject,
+                'max_marks_theory' => $match[2],
+                'min_marks_theory' => $match[3],
+                'obtained_theory' => $match[4],
+                'obtained_practical' => $match[5],
+            ];
+        }
+    }
+
+    return response()->json([
+        'name' => $studentName,
+        'subjects' => $subjects,
+        'raw_text' => $text,
+    ]);
 
         } catch (\Aws\Textract\Exception\TextractException $e) {
             return response()->json([
