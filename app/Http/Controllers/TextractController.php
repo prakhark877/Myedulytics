@@ -32,69 +32,89 @@ class TextractController extends Controller
             ]);
             
             // Combine LINE blocks
-            $text = '';
-            foreach ($result->get('Blocks') as $block) {
-                if ($block['BlockType'] === 'LINE') {
-                    $text .= $block['Text'] . "\n";
-                }
+            
+            // Combine LINE blocks
+$text = '';
+foreach ($result->get('Blocks') as $block) {
+    if ($block['BlockType'] === 'LINE') {
+        $text .= $block['Text'] . "\n";
+    }
+}
+
+// Normalize and clean text
+$text = preg_replace('/ +/', ' ', $text); // remove extra spaces
+$text = preg_replace('/[^A-Za-z0-9\[\]\&\+\/\.\-\s\n]/', '', $text); // clean junk chars
+$text = trim($text);
+
+// === Extract Student Name === //
+$studentName = null;
+$lines = explode("\n", $text);
+foreach ($lines as $index => $line) {
+    $line = trim($line);
+    if (stripos($line, 'CERTIFIED THAT') !== false && isset($lines[$index + 1])) {
+        $nextLine = trim($lines[$index + 1]);
+        if (isset($lines[$index + 2])) {
+            $secondLine = trim($lines[$index + 2]);
+            // check for uppercase name pattern
+            if (preg_match('/^[A-Z\s]{5,}$/', $nextLine) && preg_match('/^(SHRI|SUSHRI)/i', $secondLine)) {
+                $studentName = $nextLine;
+                break;
             }
-            
-            // Normalize text
-            $text = preg_replace('/ +/', ' ', $text); // remove extra spaces
-            $text = trim($text);
-            
-            // === Extract Name === //
-            $studentName = null;
-            if (preg_match('/CERTIFIED THAT\s+([A-Z\s]+)\n(SHRI|SUSHRI|WHOSE|FATHER\'S)/i', $text, $matches)) {
-                $studentName = trim($matches[1]);
-            } elseif (preg_match('/\n([A-Z]{3,}\s+[A-Z]{3,})\n(SHRI|SUSHRI)/', $text, $fallback)) {
-                $studentName = trim($fallback[1]);
-            } else {
-                // Extra fallback: find a name-like line
-                foreach (explode("\n", $text) as $line) {
-                    if (preg_match('/^[A-Z]{3,}\s+[A-Z]{3,}$/', trim($line))) {
-                        $studentName = trim($line);
-                        break;
-                    }
-                }
+        }
+    }
+}
+
+// Fallback to all-uppercase line before "SHRI" or "FATHER'S"
+if (!$studentName) {
+    foreach ($lines as $i => $line) {
+        if (preg_match('/^(SHRI|SUSHRI|WHOSE|FATHER)/i', $line) && isset($lines[$i - 1])) {
+            $prev = trim($lines[$i - 1]);
+            if (preg_match('/^[A-Z\s]{5,}$/', $prev)) {
+                $studentName = $prev;
+                break;
             }
-            
-            // === Extract Subjects === //
-            $subjects = [];
-            $lines = explode("\n", $text);
-            foreach ($lines as $line) {
-                $line = trim($line);
-            
-                // Match lines with subject + 4 numbers (max, min, theory, practical)
-                if (preg_match('/^([A-Z &\[\]\/\.\+\-]+)\s+(\d{2,3})\s+(\d{2,3})\s+(\d{2,3})\s+(\d{2,3})$/', $line, $match)) {
-                    $subject = trim($match[1]);
-            
-                    // Skip unwanted rows
-                    if (
-                        stripos($subject, 'GRAND') !== false ||
-                        stripos($subject, 'TOTAL') !== false ||
-                        stripos($subject, 'GRADE') !== false ||
-                        stripos($subject, 'RESULT') !== false
-                    ) {
-                        continue;
-                    }
-            
-                    $subjects[] = [
-                        'subject' => $subject,
-                        'max_marks_theory' => $match[2],
-                        'min_marks_theory' => $match[3],
-                        'obtained_theory' => $match[4],
-                        'obtained_practical' => $match[5],
-                    ];
-                }
-            }
-            
-            return response()->json([
-                'name' => $studentName,
-                'name11' => $studentName,
-                'subjects' => $subjects,
-                'raw_text' => $text,
-            ]);
+        }
+    }
+}
+
+// Clean name extra line if contains '\n'
+$studentName = preg_replace('/\s+/', ' ', $studentName);
+
+// === Extract Subjects === //
+$subjects = [];
+foreach ($lines as $line) {
+    $line = trim($line);
+
+    // Match subject lines with pattern: SUBJECT_NAME then four numbers (Max, Min, Obtained Theory, Obtained Practical)
+    if (preg_match('/^([A-Z &\[\]\/\.\+\-]+)\s+(\d{2,3})\s+(\d{2,3})\s+(\d{2,3})\s+(\d{2,3})$/', $line, $match)) {
+        $subject = trim($match[1]);
+
+        // Skip unwanted rows
+        if (
+            stripos($subject, 'GRAND') !== false ||
+            stripos($subject, 'TOTAL') !== false ||
+            stripos($subject, 'GRADE') !== false ||
+            stripos($subject, 'RESULT') !== false
+        ) {
+            continue;
+        }
+
+        $subjects[] = [
+            'subject' => $subject,
+            'max_marks_theory' => $match[2],
+            'min_marks_theory' => $match[3],
+            'obtained_theory' => $match[4],
+            'obtained_practical' => $match[5],
+        ];
+    }
+}
+
+return response()->json([
+    'name' => $studentName,
+    'subjects' => $subjects,
+    'raw_text' => $text,
+]);
+
             
             
         } catch (\Aws\Textract\Exception\TextractException $e) {
