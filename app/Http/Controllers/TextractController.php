@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 
 class TextractController extends Controller
 {
-    public function extractText(Request $request)
+    public function extractTextold(Request $request)
     {
 
         $imageUrl = $request->input('url'); // CloudFront or S3 public URL
@@ -114,7 +114,7 @@ return response()->json([
 
 
 
-    public function extractText111(Request $request)
+    public function extractText(Request $request)
     {
 
         $imageUrl = $request->input('url'); // CloudFront or S3 public URL
