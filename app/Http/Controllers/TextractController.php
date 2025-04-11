@@ -21,40 +21,43 @@ class TextractController extends Controller
     try {
         $imageContent = file_get_contents($imageUrl);
 
-        if (!$imageContent) {
-            throw new \Exception("Unable to download image from URL.");
-        }
+if (!$imageContent) {
+    throw new \Exception("Unable to download image from URL.");
+}
 
-        $result = $textract->detectDocumentText([
-            'Document' => [
-                'Bytes' => $imageContent,
-            ]
-        ]);
-    
-          // Combine all words into a full string
-    $text = '';
-    foreach ($result->get('Blocks') as $block) {
-        if ($block['BlockType'] === 'WORD') {
-            $text .= $block['Text'] . ' ';
-        }
+// Step 1: Detect text using AWS Textract
+$result = $textract->detectDocumentText([
+    'Document' => [
+        'Bytes' => $imageContent,
+    ]
+]);
+
+// Step 2: Combine all blocks into one string
+$text = '';
+foreach ($result->get('Blocks') as $block) {
+    if ($block['BlockType'] === 'WORD') {
+        $text .= $block['Text'] . ' ';
     }
+}
 
-    // Step 1: Extract name (if pattern matches)
-    $studentName = null;
-    if (preg_match('/CERTIFIED THAT\s+([A-Z\s]+?)\s+(SHRI|SUSHRI|WHOSE)/i', $text, $nameMatches)) {
-        $studentName = trim($nameMatches[1]);
-    }
+// Step 3: Try to extract student name (more flexible)
+$studentName = null;
+if (preg_match('/CERTIFIED THAT\s+([A-Z\s]+?)(?:\s+SHRI|\s+SUSHRI|\s+WHOSE|,)/i', $text, $nameMatches)) {
+    $studentName = trim($nameMatches[1]);
+}
 
-    // Step 2: Extract all potential subject + marks rows (flexible)
-    $subjects = [];
- // This regex tries to find lines like:
-    // SUBJECT_NAME 100 33 061 061  or SUBJECT_NAME 75 25 050 015 etc.
-    preg_match_all('/([A-Z&\[\]\/\s\.]+?)\s+(\d{2,3})\s+(\d{2,3})\s+(\d{2,3})\s+(\d{2,3})/', $text, $matches, PREG_SET_ORDER);
+// Step 4: Try extracting subjects line-by-line (for better accuracy)
+$subjects = [];
+$lines = explode("\n", $text); // if not line-separated, fallback:
+if (count($lines) < 2) {
+    $lines = preg_split('/(?<=\d{2,3})\s+(?=[A-Z])/', $text);
+}
 
-    foreach ($matches as $match) {
+foreach ($lines as $line) {
+    if (preg_match('/([A-Z&\[\]\/\s\.]+?)\s+(\d{2,3})\s+(\d{2,3})\s+(\d{2,3})\s+(\d{2,3})/', $line, $match)) {
         $subjectName = trim($match[1]);
 
-        // Skip junk subjects
+        // Skip very short or invalid subjects
         if (strlen($subjectName) < 3 || str_word_count($subjectName) < 1) {
             continue;
         }
@@ -67,12 +70,14 @@ class TextractController extends Controller
             'obtained_practical' => $match[5],
         ];
     }
+}
 
-    return response()->json([
-        'name' => $studentName,
-        'subjects' => $subjects,
-        'raw_text' => $text, // optional: remove in production
-    ]);
+// Final Response
+return response()->json([
+    'name' => $studentName,
+    'subjects' => $subjects,
+    'raw_text' => $text // optional: remove this in production
+]);
 
     } catch (\Aws\Textract\Exception\TextractException $e) {
         return response()->json([
