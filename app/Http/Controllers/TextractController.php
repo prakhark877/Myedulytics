@@ -31,7 +31,7 @@ class TextractController extends Controller
                 ]
             ]);
             
-            // Combine all detected words into a single string
+            // Combine all detected words into a string
             $text = '';
             foreach ($result->get('Blocks') as $block) {
                 if ($block['BlockType'] === 'WORD') {
@@ -39,58 +39,45 @@ class TextractController extends Controller
                 }
             }
             
-            // Extract student name using a flexible regex
+            // Extract student name (between 'CERTIFIED THAT' and 'SHRI' or similar)
             $studentName = null;
             if (preg_match('/CERTIFIED THAT\s+([A-Z\s]+?)\s+(SHRI|SUSHRI|WHOSE|FATHER\'S)/i', $text, $nameMatches)) {
                 $studentName = trim($nameMatches[1]);
             }
             
-            // Prepare for extracting subjects
+            // Now extract subjects
             $subjects = [];
             
-            // Ignore known headers or remarks
-            $ignorePhrases = [
-                'MAX. MIN.', 'REMARKS', 'MARKS THEORY', 'TOTAL', 'GRAND TOTAL', 'GRADE', 'VALIDATOR'
-            ];
+            // Break the text into chunks using keywords like subject names or numbers
+            preg_match_all('/([A-Z&\[\]\/\.\s]{3,})\s+(\d{2,3})\s+(\d{2,3})\s+(\d{2,3})\s+(\d{2,3})/', $text, $matches, PREG_SET_ORDER);
             
-            // Use basic whitespace-based "line" extraction (even if not true lines)
-            $possibleLines = preg_split('/\s{2,}/', $text);
+            foreach ($matches as $match) {
+                $subject = trim($match[1]);
             
-            foreach ($possibleLines as $line) {
-                $line = trim($line);
-            
-                // Skip junk headers or known keywords
-                $skip = false;
-                foreach ($ignorePhrases as $phrase) {
-                    if (stripos($line, $phrase) !== false) {
-                        $skip = true;
-                        break;
-                    }
+                // Avoid junk like GRAND TOTAL or headings
+                if (
+                    stripos($subject, 'GRAND') !== false ||
+                    stripos($subject, 'TOTAL') !== false ||
+                    stripos($subject, 'GRADE') !== false ||
+                    stripos($subject, 'MAX') !== false ||
+                    stripos($subject, 'MIN') !== false
+                ) {
+                    continue;
                 }
-                if ($skip) continue;
             
-                // Try extracting actual subject + marks
-                if (preg_match('/([A-Z&\[\]\/\.\s]{3,})\s+(\d{2,3})\s+(\d{2,3})\s+(\d{2,3})\s+(\d{2,3})/', $line, $match)) {
-                    $subjectName = trim($match[1]);
-            
-                    // Basic filters
-                    if (strlen($subjectName) > 2 && str_word_count($subjectName) >= 1) {
-                        $subjects[] = [
-                            'subject' => $subjectName,
-                            'max_marks_theory' => $match[2],
-                            'min_marks_theory' => $match[3],
-                            'obtained_theory' => $match[4],
-                            'obtained_practical' => $match[5],
-                        ];
-                    }
-                }
+                $subjects[] = [
+                    'subject' => $subject,
+                    'max_marks_theory' => $match[2],
+                    'min_marks_theory' => $match[3],
+                    'obtained_theory' => $match[4],
+                    'obtained_practical' => $match[5],
+                ];
             }
             
-            // Final Response
             return response()->json([
                 'name' => $studentName,
                 'subjects' => $subjects,
-                'raw_text' => $text, // optional: remove in production
+                'raw_text' => $text,
             ]);
             
 
