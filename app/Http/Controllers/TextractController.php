@@ -21,80 +21,78 @@ class TextractController extends Controller
         try {
             $imageContent = file_get_contents($imageUrl);
 
-            if (!$imageContent) {
-                throw new \Exception("Unable to download image from URL.");
+if (!$imageContent) {
+    throw new \Exception("Unable to download image from URL.");
+}
+
+$result = $textract->analyzeDocument([
+    'Document' => [
+        'Bytes' => $imageContent,
+    ],
+    'FeatureTypes' => ['TABLES', 'FORMS'],
+]);
+
+$blocks = $result->get('Blocks');
+$blockMap = [];
+$tables = [];
+
+foreach ($blocks as $block) {
+    $blockMap[$block['Id']] = $block;
+}
+
+// Group table data
+foreach ($blocks as $block) {
+    if ($block['BlockType'] === 'TABLE') {
+        $tables[] = self::getTable($block, $blockMap);
+    }
+}
+
+// Extract student name from all detected lines
+$text = '';
+foreach ($blocks as $block) {
+    if ($block['BlockType'] === 'LINE') {
+        $text .= $block['Text'] . "\n";
+    }
+}
+
+$studentName = null;
+if (preg_match('/CERTIFIED THAT\s+([A-Z\s]+)\n(SHRI|SUSHRI|WHOSE|FATHER\'S)/i', $text, $matches)) {
+    $studentName = trim($matches[1]);
+} elseif (preg_match('/\n([A-Z]{3,}\s+[A-Z]{3,})\n(SHRI|SUSHRI)/', $text, $fallback)) {
+    $studentName = trim($fallback[1]);
+}
+
+// Convert table into structured subjects
+$subjects = [];
+foreach ($tables as $table) {
+    foreach ($table as $row) {
+        // Expecting pattern: Subject, Max, Min, Obtained Theory, Practical
+        if (count($row) >= 5 && is_numeric($row[1]) && is_numeric($row[2]) && is_numeric($row[3])) {
+            $subject = strtoupper(trim($row[0]));
+            if (
+                !str_contains($subject, 'TOTAL') &&
+                !str_contains($subject, 'GRAND') &&
+                !str_contains($subject, 'GRADE') &&
+                !str_contains($subject, 'RESULT')
+            ) {
+                $subjects[] = [
+                    'subject' => $subject,
+                    'max_marks_theory' => $row[1],
+                    'min_marks_theory' => $row[2],
+                    'obtained_theory' => $row[3],
+                    'obtained_practical' => $row[4] ?? null,
+                ];
             }
-            
-            $result = $textract->detectDocumentText([
-                'Document' => [
-                    'Bytes' => $imageContent,
-                ]
-            ]);
-            
-            // Combine LINE blocks
-            $text = '';
-            foreach ($result->get('Blocks') as $block) {
-                if ($block['BlockType'] === 'LINE') {
-                    $text .= $block['Text'] . "\n";
-                }
-            }
-            
-            // Extract student name
-            $studentName = null;
-            if (preg_match('/CERTIFIED THAT\s+([A-Z\s]+)\n(SHRI|SUSHRI|WHOSE|FATHER\'S)/i', $text, $matches)) {
-                $studentName = trim($matches[1]);
-            } elseif (preg_match('/\n([A-Z]{3,}\s+[A-Z]{3,})\n(SHRI|SUSHRI)/', $text, $fallback)) {
-                $studentName = trim($fallback[1]);
-            }
-            
-            // Extract subjects and marks
-            $subjects = [];
-            $lines = explode("\n", $text);
-            $totalLines = count($lines);
-            
-            for ($i = 0; $i < $totalLines - 4; $i++) {
-                $line = trim($lines[$i]);
-            
-                // Check if subject name line followed by pattern like: 100, 33, marks, marks
-                if (preg_match('/^[A-Z &\[\]\/\.\+]{3,}$/', $line)) {
-                    if (
-                        isset($lines[$i + 1], $lines[$i + 2], $lines[$i + 3], $lines[$i + 4]) &&
-                        is_numeric(trim($lines[$i + 1])) &&
-                        is_numeric(trim($lines[$i + 2])) &&
-                        is_numeric(trim($lines[$i + 3])) &&
-                        is_numeric(trim($lines[$i + 4]))
-                    ) {
-                        $subjectName = $line;
-                        $maxMarksTheory = trim($lines[$i + 1]);
-                        $minMarksTheory = trim($lines[$i + 2]);
-                        $obtainedTheory = trim($lines[$i + 3]);
-                        $obtainedPractical = trim($lines[$i + 4]);
-            
-                        // Filter out totals, etc.
-                        if (
-                            stripos($subjectName, 'GRAND') === false &&
-                            stripos($subjectName, 'TOTAL') === false &&
-                            stripos($subjectName, 'GRADE') === false &&
-                            stripos($subjectName, 'RESULT') === false
-                        ) {
-                            $subjects[] = [
-                                'subject' => $subjectName,
-                                'max_marks_theory' => $maxMarksTheory,
-                                'min_marks_theory' => $minMarksTheory,
-                                'obtained_theory' => $obtainedTheory,
-                                'obtained_practical' => $obtainedPractical,
-                            ];
-                        }
-                    }
-                }
-            }
-            
-            return response()->json([
-                'name' => $studentName,
-                'subjects' => $subjects,
-                'raw_text' => $text,
-            ]);
-            
+        }
+    }
+}
+
+return response()->json([
+    'name' => $studentName,
+    'subjects' => $subjects,
+    'raw_text' => $text,
+]);
+      
             
             
         } catch (\Aws\Textract\Exception\TextractException $e) {
@@ -107,4 +105,47 @@ class TextractController extends Controller
             ], 500);
         }
     }
+
+// Helper Function
+public function getTable($tableBlock, $blockMap) {
+    $table = [];
+    $rows = [];
+
+    foreach ($tableBlock['Relationships'] ?? [] as $rel) {
+        if ($rel['Type'] === 'CHILD') {
+            foreach ($rel['Ids'] as $childId) {
+                $cell = $blockMap[$childId];
+                if ($cell['BlockType'] === 'CELL') {
+                    $rowIdx = $cell['RowIndex'];
+                    $colIdx = $cell['ColumnIndex'];
+
+                    $cellText = '';
+                    foreach ($cell['Relationships'] ?? [] as $cellRel) {
+                        if ($cellRel['Type'] === 'CHILD') {
+                            foreach ($cellRel['Ids'] as $textId) {
+                                if (isset($blockMap[$textId]['Text'])) {
+                                    $cellText .= $blockMap[$textId]['Text'] . ' ';
+                                }
+                            }
+                        }
+                    }
+
+                    $rows[$rowIdx][$colIdx] = trim($cellText);
+                }
+            }
+        }
+    }
+
+    // Normalize rows
+    foreach ($rows as $row) {
+        ksort($row);
+        $table[] = array_values($row);
+    }
+
+    return $table;
+}
+
+      
+
+
 }
