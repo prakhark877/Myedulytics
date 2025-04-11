@@ -91,6 +91,7 @@ class TextractController extends Controller
             
             return response()->json([
                 'name' => $studentName,
+                'name11' => $studentName,
                 'subjects' => $subjects,
                 'raw_text' => $text,
             ]);
