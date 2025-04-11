@@ -165,29 +165,53 @@ return response()->json([
             }
     
             // Parse subjects and marks
-            $subjects = [];
-            foreach ($tables as $table) {
-                foreach ($table as $row) {
-                    if (count($row) >= 4 && is_numeric($row[1]) && is_numeric($row[2]) && is_numeric($row[3])) {
-                        $subject = strtoupper(trim($row[0]));
-                        if (
-                            !str_contains($subject, 'TOTAL') &&
-                            !str_contains($subject, 'GRAND') &&
-                            !str_contains($subject, 'GRADE') &&
-                            !str_contains($subject, 'RESULT')
-                        ) {
+          
+            // Parse subjects and marks
+                // Parse subjects from tables (if available), otherwise fallback to raw text
+                $subjects = [];
+
+                if (!empty($tables)) {
+                    foreach ($tables as $table) {
+                        foreach ($table as $row) {
+                            if (count($row) >= 4 && is_numeric($row[1]) && is_numeric($row[2]) && is_numeric($row[3])) {
+                                $subject = strtoupper(trim($row[0]));
+                                if (
+                                    !str_contains($subject, 'TOTAL') &&
+                                    !str_contains($subject, 'GRAND') &&
+                                    !str_contains($subject, 'GRADE') &&
+                                    !str_contains($subject, 'RESULT')
+                                ) {
+                                    $subjects[] = [
+                                        'subject' => $subject,
+                                        'max_marks_theory' => $row[1],
+                                        'min_marks_theory' => $row[2],
+                                        'obtained_theory' => $row[3],
+                                        'obtained_practical' => $row[4] ?? null,
+                                    ];
+                                }
+                            }
+                        }
+                    }
+                }
+        
+                // Fallback: Extract subjects and marks from raw text
+                if (empty($subjects)) {
+                    $lines = explode("\n", $rawText);
+                    foreach ($lines as $line) {
+                        if (preg_match('/^([A-Z\s&\[\]]+)\s+100\s+33\s+(\d{2,3})$/i', trim($line), $matches)) {
+                            $subject = trim($matches[1]);
+                            $obtained = $matches[2];
                             $subjects[] = [
                                 'subject' => $subject,
-                                'max_marks_theory' => $row[1],
-                                'min_marks_theory' => $row[2],
-                                'obtained_theory' => $row[3],
-                                'obtained_practical' => $row[4] ?? null,
+                                'max_marks_theory' => 100,
+                                'min_marks_theory' => 33,
+                                'obtained_theory' => $obtained,
+                                'obtained_practical' => null,
                             ];
                         }
                     }
                 }
-            }
-    
+        
             return response()->json([
                 'name' => $studentName,
                 'subjects' => $subjects,
