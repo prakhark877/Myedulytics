@@ -14,12 +14,16 @@ class MarksheetController extends Controller
     public function index()
     {
         $user = helper::getTokenInfo();
+    
         if (! $user) {
             return redirect()->route('login')->with('error', 'Token not found');
         }
-        $marksheets = Marksheet::where('user_id', $user->id);
+    
+        $marksheets = Marksheet::where('user_id', $user->id)->get(); // ⬅️ use get() here
+    
         return view('dashboard.student.marksheets.index', compact('marksheets', 'user'));
     }
+    
 
     public function create()
     {
