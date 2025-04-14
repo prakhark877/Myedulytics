@@ -17,8 +17,7 @@ class MarksheetController extends Controller
         if (! $user) {
             return redirect()->route('login')->with('error', 'Token not found');
         }
-
-        $marksheets = Marksheet::all();
+        $marksheets = Marksheet::where('user_id', $user->id);
         return view('dashboard.student.marksheets.index', compact('marksheets', 'user'));
     }
 
