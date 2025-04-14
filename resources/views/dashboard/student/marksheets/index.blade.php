@@ -33,7 +33,7 @@
                                         </td>
                                         <td>{{ $marksheet->description }}</td>
                                         <td>
-                                            <a href="{{ route('marksheets.edit', $marksheet->id) }}" class="btn btn-warning">Edit</a>
+                                            {{-- <a href="{{ route('marksheets.edit', $marksheet->id) }}" class="btn btn-warning">Edit</a> --}}
                                             <form action="{{ route('marksheets.destroy', $marksheet->id) }}" method="POST" style="display:inline;" id="delete-form-{{ $marksheet->id }}">
                                                 @csrf
                                                 @method('DELETE')

@@ -30,7 +30,7 @@
 
                             <div class="form-group">
                                 <label for="image" class="form-label">Choose Image*</label>
-                                <input class="upload form-control" id="fz_image" name="fz_image" onchange="uploadS3File(this.id)" type="file">
+                                <input class="upload form-control" id="fz_image" name="fz_image" onchange="uploadMarksheetS3File(this.id)" type="file">
                                 <input id="image" name="image" type="hidden" value="">
                             </div>
 
