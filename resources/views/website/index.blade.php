@@ -4,7 +4,9 @@
   <meta charset="UTF-8">
   <title>MyEdulytics</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:ital,wght@1,700&display=swap" rel="stylesheet">
+   <!-- Load Carlito font (Calibri-compatible) -->
+  <link href="https://fonts.googleapis.com/css2?family=Carlito&display=swap" rel="stylesheet">
+  <!-- <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:ital,wght@1,700&display=swap" rel="stylesheet"> -->
   <style>
     * {
       box-sizing: border-box;
@@ -13,7 +15,7 @@
     html, body {
       height: 100%;
       margin: 0;
-      font-family: 'Comic Neue', cursive;
+      font-family: 'Calibri', 'Carlito', 'Arial', sans-serif;
       color: #082567;
       background-image: url(https://d2vmtwtvjnckox.cloudfront.net/uploads/1753968315619.jpeg);
       background-repeat: no-repeat;
