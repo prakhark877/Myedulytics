@@ -42,7 +42,6 @@ class QuizzesAnswerController extends Controller
      */
     public function edit($quiz_id)
     {
-        
         $user = helper::getTokenInfo();
         if (!$user) {
             return redirect()->route('login')->with('error', 'Token not found');
@@ -56,7 +55,6 @@ class QuizzesAnswerController extends Controller
             return redirect()->back()->with('error', 'No questions available for this quiz.');
         }
         return view('dashboard.admin.quizzes_answer.edit', compact('quizzes_answer','questions', 'quizzes', 'user'));
-
     }
 
     /**

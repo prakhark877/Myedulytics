@@ -17,7 +17,7 @@
       margin: 0;
       font-family: 'Calibri', 'Carlito', 'Arial', sans-serif;
       color: #082567;
-      background-image: url(https://d2vmtwtvjnckox.cloudfront.net/uploads/1753968315619.jpeg);
+      background-color: rgb(226 232 240);
       background-repeat: no-repeat;
       background-size: cover;
       background-position: center;
@@ -45,7 +45,7 @@
     .nav {
       display: flex;
       flex-wrap: wrap;
-      gap: 80px;
+      gap: 2px;
       justify-content: center;
     }
 
@@ -116,7 +116,7 @@
         gap: 10px;
       }
 
-          .nav {
+    .nav {
         justify-content: center;
         gap: 10px;
         text-align: center;
@@ -156,11 +156,17 @@
       <img src="https://d2vmtwtvjnckox.cloudfront.net/uploads/1753968358102.png" alt="Logo">
     </div>
     <div class="nav">
-      <a href="#">Home</a>
-      <a href="#">Dashboards</a>
-      <a href="#">Assessments</a>
-      <a href="#">Mentoring</a>
-      <a href="#">Admissions</a>
+      <a href="/home">Home</a>
+      <a href="/dashboard">Dashboards</a>
+      <a href="/assessment">Assessments</a>
+      <a href="/mentoring">Mentoring</a>
+      <a href="/admissions">Admissions</a>
+      <!-- <a href="/attemptquiz">AttemptQuix</a>
+      <a href="/adminindex">AdminIndex</a>
+      <a href="/student_list">Studentlist</a>
+      <a href="/studentattemptquiz">StudentAttemptQuiz</a>
+      <a href="/studentfilterquiz">StudentFilterQuiz</a>
+      <a href="/studentlist">StudentQuiz</a> -->
     </div>
   </div>
 
@@ -169,9 +175,9 @@
     <h2>Analytics for Education and Careers</h2>
 
     <div class="login-buttons">
-      <a href="/login">Parent Login</a>
+      <a href="/parentlogin">Parent Login</a>
       <a href="/login">Student Login</a>
-      <a href="#">Teacher Login</a>
+      <!-- <a href="/teacherlogin">Teacher Login</a> -->
     </div>
   </div>
 

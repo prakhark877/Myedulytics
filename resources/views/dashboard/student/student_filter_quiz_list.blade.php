@@ -1,99 +1,144 @@
-@extends('dashboard.student.layout.template')
+@extends('dashboard.student.layout.contentsection')
 @section('content')
     
-  <div class="content-wrapper">
-    <!-- Content Header (Page header) -->
-    <section class="content-header">
-      <div class="container-fluid">
-        <div class="row mb-2">
-          <div class="col-sm-6">
-            <h1>Student Quiz<a href="/student-filter-quiz" class="btn btn-primary"><span class="glyphicon glyphicon-refresh"></span>Page Refresh</a></h1>
-          </div>
-          <div class="col-sm-6">
-            <ol class="breadcrumb float-sm-right">
-              <li class="breadcrumb-item"><a href="/dashboard">Dashboard</a></li>
-              <li class="breadcrumb-item active">Student Detail</li>
-              
-            </ol>
-          </div>
+  <div class="content-wrapper p-4"
+     style="background: linear-gradient(135deg, #064e3b, #065f46);
+            border-radius: 15px;
+            min-height: 80vh;
+            margin-left: 260px;
+            margin-top: 20px;
+            color: white;">
+
+    <!-- HEADER -->
+    <section class="content-header mb-4">
+        <div class="d-flex justify-content-between align-items-center flex-wrap">
+
+            <h1 class="text-white mb-2">
+                <i class="fa-solid fa-graduation-cap"></i> Student Quiz List
+            </h1>
+
+            <a href="/student-filter-quiz" class="btn btn-light btn-sm shadow-sm">
+                <i class="fas fa-sync-alt"></i> Refresh
+            </a>
         </div>
-      </div><!-- /.container-fluid -->
+
+        <ol class="breadcrumb mt-2">
+            <li class="breadcrumb-item">
+                <a href="/dashboard" class="text-white">Dashboard</a>
+            </li>
+            <li class="breadcrumb-item active text-white">Student Quiz</li>
+        </ol>
     </section>
-<style type="text/css">
-      div#example2_paginate {
-    display: none !important;
-}
-div#example2_info {
-    display: none !important;
-}
+
+    <style>
+        #example2_paginate,
+        #example2_info {
+            display: none !important;
+        }
+
+        .quiz-card {
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+            overflow: hidden;
+            color: #1e293b;
+        }
+
+        .quiz-card-header {
+            background: #f1f5f9;
+            padding: 15px 20px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .quiz-card-header h5 {
+            margin: 0;
+            font-weight: 600;
+        }
+
+        thead th {
+            background: #e2e8f0 !important;
+            color: #1e293b !important;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        tbody tr:hover {
+            background-color: #f8fafc !important;
+        }
+
+        td a {
+            font-weight: 600;
+            color: #065f46;
+            text-decoration: none;
+        }
+
+        td a:hover {
+            color: #0a7b5a;
+            text-decoration: underline;
+        }
     </style>
-    <!-- Main content -->
+
+    <!-- MAIN CONTENT -->
     <section class="content">
-      <div class="container-fluid">
-        <div class="row">
-          <div class="col-12">
-            <div class="card">
-              <h5 style="margin-left: 20px;margin-top: 10px;"> <b>Student Age:</b> {{$age}} Year</h5>
-              <!-- /.card-header -->
-              <div class="card-body">
-                <table id="example2" class="table table-bordered table-hover">
-                  <thead>
-                  <tr>
-                    <th>Quiz Title</th>
-                  </tr>
-                  </thead>
-                  <tbody>
-                  @foreach($quizzes as $key=> $val)
-                  <tr>
-                    <td><a target="_blank" href="/continue-quiz/{{$val->slug}}"> {{$val->title}}</a></td>
-                  </tr>
-                  @endforeach
-                </tbody>
-                </table>
-              </div>
-              <!-- /.card-body -->
+        <div class="quiz-card">
+
+            <!-- HEADER TITLE INSIDE CARD -->
+            <div class="quiz-card-header">
+                <h5><i class="fa-solid fa-user-clock"></i> Available Quizzes by Age</h5>
             </div>
-            <!-- /.card -->
-          </div>
-          <!-- /.col -->
+
+            <!-- TABLE -->
+            <div class="card-body table-responsive">
+
+                <table id="example2" class="table table-bordered table-hover text-center align-middle">
+                    <thead>
+                        <tr>
+                            <th>Quiz Title</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @if(isset($quizzes) && count($quizzes) > 0)
+                            @foreach($quizzes as $key => $val)
+                                <tr>
+                                    <td>
+                                        <a target="_blank" href="/continue-quiz/{{ $val->slug }}">
+                                            <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                                            {{ $val->title }}
+                                        </a>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        @else
+                            <tr>
+                                <td colspan="1" class="text-center text-muted py-3">
+                                    <i class="fa-solid fa-circle-exclamation"></i>
+                                    No quizzes found.
+                                </td>
+                            </tr>
+                        @endif
+                    </tbody>
+
+                </table>
+
+            </div>
+
         </div>
-        <!-- /.row -->
-      </div>
-      <!-- /.container-fluid -->
     </section>
-    <!-- /.content -->
-  </div>
-  <script>
-    $(function () {
-        $("#example1").DataTable({
-          "responsive": true,
-          "autoWidth": false,
-        });
-        $('#example2').DataTable({
-          "paging": true,
-          "lengthChange": false,
-          "searching": false,
-          "ordering": true,
-          "info": true,
-          "autoWidth": false,
-          "responsive": true,
-        }); 
-    
-   });
+</div>
 
-   $('#expdata').click(function(){
-      // alert('export data clicked.');
-      var from =  $('#fromdt').val();
-      var to =  $('#todt').val();
-      var srch = $('#search').val();
-      
-      $('#tdt').val(to);
-      $('#fdt').val(from);
-      $('#srch').val(srch);
-      
-   });
-   
-  </script>
-
+<script>
+$(function () {
+    $('#example2').DataTable({
+        paging: true,
+        lengthChange: false,
+        searching: false,
+        ordering: true,
+        info: true,
+        autoWidth: false,
+        responsive: true
+    });
+});
+</script>
 
 @endsection

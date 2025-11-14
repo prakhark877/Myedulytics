@@ -2,8 +2,6 @@
 
 @section('content')
  
-
-
   <!-- see-your options section start -->
   <div class="cb-band cb-band-panel">
     <div class="container">

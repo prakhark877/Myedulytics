@@ -37,8 +37,8 @@
             <img src="../../dist/img/user-default.png" class="img-circle elevation-2" alt="User Image">
 
             <p>
-              <small>{{ $user->name }}</small>
-              <small>{{ $user->email }}</small>
+              <small></small>
+              <small></small>
             </p>
           </li>
         
@@ -54,7 +54,7 @@
       <form method="POST" action="{{ url('logout') }}">
         @csrf
         <button type="submit" class="btn btn-danger btn-lg"><span class="glyphicon glyphicon-log-out"></span> Log out</button>
-    </form>
+      </form>
       {{-- <a href="{{ url('logout') }}" class="btn btn-danger btn-lg" ><span class="glyphicon glyphicon-log-out"></span> Log out</a> --}}
   
     </ul>

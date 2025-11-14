@@ -60,6 +60,7 @@ div#example2_info {
                   </tr>
                   </thead>
                   <tbody>
+                   $QuizAttemptAnswer = 
                   @foreach($QuizAttemptAnswer as $key=> $val)
                   <tr>
                     <td>{{$val->first_name}} {{$val->last_name}}</td>
@@ -116,6 +117,5 @@ div#example2_info {
    });
    
   </script>
-
 
 @endsection

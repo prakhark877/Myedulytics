@@ -2,199 +2,26 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
-use App\utilities\helper;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Validator;
-use Exception;
-use Aws\S3\S3Client;
-use Aws\CognitoIdentity\CognitoIdentityClient;
-use Aws\CloudFront\CloudFrontClient;
-use Aws\Connect\ConnectClient;
-use Carbon\Carbon;
-use App\Models\AgeGroups;
-use App\Models\QuizzesAnswer;
-use App\Models\QuizAttemptAnswer;
+use App\Models\User;
 
 class AdminDashboardController extends Controller
 {
-    //
-
-
-    public function getS3Token()
+    // ✅ Admin Dashboard main page
+    public function index()
     {
-        try {
-            $user = helper::getTokenInfo();
-            if (!$user) {
-                return redirect()->route('login')->with('error', 'Token not found');
-            }
-            
-            $client = new CognitoIdentityClient([
-                'version' => 'latest',
-                'region' => config('constants.AWS_CREDENTIALS.REGION')
-            ]); // AWS::createClient('cognitoIdentity');
-            $identityPoolId = config('constants.AWS_CREDENTIALS.IDENTITYPOOLID');
-            //echo $identityPoolId ;die;
-            $duration = config('constants.AWS_CREDENTIALS.TOKENDURATION');
-            $providerName = config('constants.AWS_CREDENTIALS.PROVIDERNAME');
-            //Log::info($identityPoolId);
-            //Log::info($providerName);
-            $resultIdentity = $client->getOpenIdTokenForDeveloperIdentity(array(
-                'IdentityPoolId' => $identityPoolId,
-                'Logins' => array(
-                    $providerName => @$user['email']
-                ),
-                'TokenDuration' => $duration,
-            ));
-            //print_r($identityPoolId);die;
-            if (isset($resultIdentity['IdentityId']) && $resultIdentity['Token']) {
-                $returnArray['success'] = true;
-                $returnArray['message'] = "Ok";
-                $returnArray['identity_id'] = $resultIdentity['IdentityId'];
-                $returnArray['token'] = $resultIdentity['Token'];
-                $returnArray['identity_pool_id'] = $identityPoolId;
-                $returnArray['public_bucket'] = config('constants.AWS_CREDENTIALS.S3BUCKET.PUBLIC');
-                $returnArray['private_bucket'] = config('constants.AWS_CREDENTIALS.S3BUCKET.PUBLIC');
-                $returnArray['cloudfront_url'] = config('constants.AWS_CREDENTIALS.CLOUDFRONTURL');
-                $returnArray['s3_bucket_region'] = config('constants.AWS_CREDENTIALS.REGION');
-            } else {
-                $returnArray['success'] = false;
-                $returnArray['message'] = "Failure";
-            }
-        } catch (Exception $e) {
-            $returnArray['success'] = false;
-            $returnArray['message'] = $e->getMessage();
-           }
-        return json_encode($returnArray);
+        return view('dashboard.admin.index');
     }
 
-    public function adminDashboard(Request $request)
-    {
-        $user = helper::getTokenInfo();
-        if (!$user) {
-            return redirect()->route('login')->with('error', 'Token not found');
-        }
-        return view('dashboard.admin.index')->with('user', $user);
-    }
-
-    public function showRegistrationForm()
-    {
-        return view('website.register-student');
-    }
-
-    public function register(Request $request)
-    {
-        // Validate the input data
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
-            'password' => 'required|string|min:8|confirmed',
-        ]);
-
-        // If validation fails, return with errors
-        if ($validator->fails()) {
-            return redirect()->back()->withErrors($validator)->withInput();
-        }
-
-        // Create the new user
-        $user = User::create([
-            'student_id' => uniqid(),
-            'first_name' => $request->input('name'),
-            'name' => $request->input('name'),
-            'email' => $request->input('email'),
-            'password' => Hash::make($request->input('password')),
-        ]);
-
-        // Log the user in after registration
-        // auth()->login($user);
-
-        // Redirect to the dashboard or another route
-        return redirect()->route('register')->with('success', 'Registration successful! Please login to continue.');
-    }
-
+    // ✅ Student List page (fix for Undefined variable $users)
     public function studentList(Request $request)
     {
-        $user = helper::getTokenInfo();
-        if (!$user) {
-            return redirect()->route('login')->with('error', 'Token not found');
-        }
-        ini_set('max_execution_time', 300);
-        $search = $request->search;
-        $fromdt = $request->fromdt;
-        $todt = $request->todt;
-        $users = User::where('users.type', 2)->select('*');
-        $append = array();
-        if ($fromdt != '' && $todt != '') {
-            $users = $users->whereBetween('users.created_at', [$fromdt, $todt]);
-            $append['fromdt'] = $fromdt;
-            $append['todt'] = $todt;
-        }
+        // Fetch only student users (type = 2)
+        $users = User::where('type', 2)
+                    ->orderBy('created_at', 'desc')
+                    ->paginate(10);
 
-        if ($search != "") {
-            $users = $users->orderBy('users.created_at', 'DESC')->where(function ($query) use ($search) {
-                $query->where('users.first_name', 'like', '%' . $search . '%')
-                // ->orWhere('users.created_at', 'like', '%'.$search.'%')
-                    ->orWhere('users.dob', 'like', '%' . $search . '%')
-                // ->orWhere('languagepreference', 'like', '%'.$search.'%')
-                    ->orWhereRaw("CONCAT('users.first_name', ' ', 'users.last_name') LIKE ?", ['%' . $search . '%']);
-            })->paginate(10);
-            // $users->appends(['search' => $search]);
-            $append['search'] = $search;
-        } else {
-            $users = $users->orderBy('users.created_at', 'DESC')->paginate(10);
-        }
-
-        if (sizeof($append) > 0) {
-            // return "appends hai";
-            $users = $users->appends($append);
-        }
-
-        //$users = UserModel::get();
-        // return $users;
-
-        foreach ($users as $ukey => $uvalue) {
-            if ($uvalue->Experience != '' && $uvalue->Experience != 0) {
-                $exp = $uvalue->Experience;
-                $fm = fmod($exp, 12);
-                $yr = ($exp - $fm) / 12;
-                if ($fm == 0) {
-                    $nexp = $yr . " yr(s).";
-                } elseif ($fm != 0 && $yr == 0) {
-                    $nexp = $fm . " month(s)";
-                } else {
-                    $nexp = $yr . " yr(s). " . $fm . " month(s)";
-                }
-
-                $users[$ukey]['Experience'] = $nexp;
-            }
-
-        }
-       // return $users;
-        return view("dashboard.admin.student_list", ['users' => $users, 'todt' => $todt, 'fromdt' => $fromdt, 'search' => $search]);
+        // Pass $users to the view
+        return view('dashboard.admin.student_list', compact('users'));
     }
-
-
-    public function attemptQuizList()
-    {
-        $user = helper::getTokenInfo();
-        if (! $user) {
-            return redirect()->route('login')->with('error', 'Token not found');
-        }
-        $QuizAttemptAnswer = QuizAttemptAnswer::from('quiz_attempt_answer')
-        ->join('quizzes_answer', 'quizzes_answer.id', '=', 'quiz_attempt_answer.quizzes_answer_id')
-        ->join('quizzes', 'quizzes.id', '=', 'quizzes_answer.quiz_id')
-        ->join('users', 'users.id', '=', 'quiz_attempt_answer.user_id') // Join users table
-        ->select(
-            'quizzes_answer.*', 
-            'quizzes.title', 
-            'users.first_name', 
-            'users.last_name'
-        )
-        ->get();
-
-        return view('dashboard.admin.attempt_quiz', compact('QuizAttemptAnswer', 'user'));
-    }
-
-   
 }

@@ -13,11 +13,12 @@ class MarksheetController extends Controller
 {
     public function index()
     {
-        $user = helper::getTokenInfo();
+         $user = (object) ['id' => 1]; // temporary fake user
+        // $user = helper::getTokenInfo();
     
-        if (! $user) {
-            return redirect()->route('login')->with('error', 'Token not found');
-        }
+        // if (! $user) {
+        //     return redirect()->route('login')->with('error', 'Token not found');
+        // }
     
         $marksheets = Marksheet::where('user_id', $user->id)->get(); // ⬅️ use get() here
     
@@ -27,10 +28,12 @@ class MarksheetController extends Controller
 
     public function create()
     {
-        $user = helper::getTokenInfo();
-        if (! $user) {
-            return redirect()->route('login')->with('error', 'Token not found');
-        }
+        // dd(helper::getTokenInfo());
+        // $user = helper::getTokenInfo();
+        // if (! $user) {
+        //     return redirect()->route('login')->with('error', 'Token not found');
+        // }
+        $user = (object) ['id' => 1]; // temporary fake user
 
         $categories = Category::with('subcategories')->get();
         $age_groups = AgeGroups::all();
@@ -40,25 +43,55 @@ class MarksheetController extends Controller
 
     public function store(Request $request)
     {
-        $user = helper::getTokenInfo();
-        if (! $user) {
-            return redirect()->route('login')->with('error', 'Token not found');
-        }
-        $request->validate([
-            'description' => 'required',
-            'image'       => 'required',
-        ]);
-        $imageUrl = config('constants.AWS_CREDENTIALS.CLOUDFRONTURL') . $request->image;
-        $image_description = self::extractText($imageUrl);
-        Marksheet::create([
-            'description' => $request->description,
-            'image_description' => $image_description,
-            'image'       => $request->image,
-            'user_id'     => $user->id, // assuming user is authenticated
-        ]);
+    // dd("STORE IS WORKING");
+    // dd($request->all(), $request->file('image'));
 
-        return redirect()->route('marksheets.index')->with('success', 'Marksheet added successfully.');
+    $user = (object) ['id' => 1]; // temporary fake user
+
+    $request->validate([
+        'description' => 'required',
+        'image'       => 'required|image',
+    ]);
+
+    $path = $request->file('image')->store('marksheets', 'public');
+    $imageUrl = asset('storage/' . $path);
+
+    // TEMPORARY — disable Textract
+    $image_description = '';
+
+    Marksheet::create([
+    'description' => $request->description,
+    'image' => $path,
+    'image_description' => $image_description,
+    'user_id' => $user->id,
+    ]);
+
+
+    return redirect()->route('marksheets.index')->with('success', 'Marksheet added successfully.');
     }
+
+
+    // public function store(Request $request)
+    // {
+    //     $user = helper::getTokenInfo();
+    //     if (! $user) {
+    //         return redirect()->route('login')->with('error', 'Token not found');
+    //     }
+    //     $request->validate([
+    //         'description' => 'required',
+    //         'image'       => 'required',
+    //     ]);
+    //     $imageUrl = config('constants.AWS_CREDENTIALS.CLOUDFRONTURL') . $request->image;
+    //     $image_description = self::extractText($imageUrl);
+    //     Marksheet::create([
+    //         'description' => $request->description,
+    //         'image_description' => $image_description,
+    //         'image'       => $request->image,
+    //         'user_id'     => $user->id, // assuming user is authenticated
+    //     ]);
+
+    //     return redirect()->route('marksheets.index')->with('success', 'Marksheet added successfully.');
+    // }
 
     public function show($id)
     {
