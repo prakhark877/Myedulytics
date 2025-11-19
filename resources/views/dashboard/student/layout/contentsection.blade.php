@@ -135,15 +135,16 @@
 <!-- ⭐ TOP NAVBAR -->
 <div class="top-navbar">
     <span class="menu-toggle-btn" id="menuToggle"><i class="fa-solid fa-bars"></i></span>
-    <img src="images/myedulytics_logo.png" alt="Logo">
+    <img src="images/myedulytics_logo.png" alt="">
     <div class="user-section">
-         <a href="/home" style="text-decoration:none; color : black;" class="mx-3">Home</a>
+        <a href="/home" style="text-decoration:none; color : black;" class="mx-3">Home</a>
         <i class="fa-solid fa-circle-user"></i> Student Portal
     </div>
 </div>
 
 <!-- ⭐ SIDEBAR -->
 <nav class="sidebar" id="sidebarMenu">
+    <img src="images/myedulytics_logo.png" alt="Logo" style="margin-top : -7em;">
     <h4><i class="fa-solid fa-user"></i>  Student Portal</h4>
 
     <a href="/studentdashboard" class="nav-link"><i class="fa-solid fa-house"></i> Dashboard</a>
