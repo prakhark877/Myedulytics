@@ -97,10 +97,6 @@
            MOBILE RESPONSIVENESS
         ------------------------------------------------*/
         @media (max-width: 992px) {
-            .sidebar {
-                left: -250px;
-            }
-
             .sidebar.open {
                 left: 0;
             }
@@ -112,7 +108,7 @@
             .menu-toggle-btn {
                 display: block;
             }
-        }
+        } 
 
         .menu-toggle-btn {
             display: none;

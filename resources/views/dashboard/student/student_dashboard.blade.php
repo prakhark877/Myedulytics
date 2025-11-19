@@ -4,7 +4,7 @@
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
     <h2><span class="extra-bold">Dashboard</span></h2>
-    <div class="bottomsection" style="display : flex; gap : 3em;">
+    <div class="bottomsection" style="display : flex; gap : 3em; flex-wrap :wrap;">
     <div class="card" style="width : 13rem; height : 8rem;">
         <div class="card-body">
            <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" fill="currentColor" class="bi bi-file-text" viewBox="0 0 16 16">
@@ -13,7 +13,7 @@
 </svg>
             <h6>View Assessments</h6>
         </div>
-    </div>  
+    </div>
 
     <div class="card" style="width : 13rem; height : 8rem;">
         <div class="card-body">
